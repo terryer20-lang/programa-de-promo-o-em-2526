@@ -51,12 +51,13 @@
             left: 0;
             width: 100%;
             z-index: 1000;
-            padding: 0.8rem 1rem;
+            padding: 0.5rem 1rem; /* 减少内边距使标题列更小 */
             background: linear-gradient(135deg, rgba(26, 43, 109, 0.95) 0%, rgba(213, 43, 30, 0.95) 100%);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             transition: transform 0.5s ease-out;
             transform: translateY(-100%);
             opacity: 0;
+            height: 60px; /* 固定高度使标题列更小 */
         }
 
         .header.visible {
@@ -72,42 +73,32 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            height: 100%;
         }
 
         .logo {
-            font-size: 1.4rem;
+            font-size: 1.1rem; /* 缩小字体 */
             font-weight: bold;
             color: #FFD700;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.3rem; /* 减少间距 */
         }
 
+        /* 移除logo图片样式 */
         .logo-images {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            display: none; /* 隐藏图片 */
         }
 
         .logo-image {
-            height: 32px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .logo-image.escudo {
-            height: 28px;
-        }
-
-        .logo-image.elctp {
-            height: 32px;
+            display: none; /* 隐藏图片 */
         }
 
         .menu-toggle {
             background: none;
             border: none;
-            font-size: 1.8rem;
+            font-size: 1.5rem; /* 缩小汉堡菜单图标 */
             cursor: pointer;
             color: #FFD700;
             padding: 0.5rem;
@@ -154,47 +145,47 @@
         }
 
         .menu-header {
-            padding: 1.5rem;
+            padding: 1.2rem; /* 减少内边距 */
             background: rgba(0, 0, 0, 0.2);
             color: white;
         }
 
         .menu-header h2 {
-            font-size: 1.4rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.2rem; /* 缩小字体 */
+            margin-bottom: 0.3rem;
             color: #FFD700;
         }
 
         .menu-header p {
             opacity: 0.9;
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* 缩小字体 */
         }
 
         .menu-content {
             flex: 1;
-            padding: 1.5rem;
+            padding: 1.2rem;
         }
 
         .menu-section {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .menu-section h3 {
-            font-size: 1.1rem;
+            font-size: 1rem; /* 缩小字体 */
             color: #FFD700;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.3rem;
             border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .menu-item {
             display: flex;
             align-items: center;
-            padding: 0.8rem 0;
+            padding: 0.6rem 0;
             color: white;
             text-decoration: none;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.95rem;
+            font-size: 0.85rem; /* 缩小字体 */
             transition: all 0.2s;
         }
 
@@ -208,15 +199,15 @@
         }
 
         .menu-item-icon {
-            width: 30px;
+            width: 25px; /* 缩小图标容器 */
             text-align: center;
-            margin-right: 0.8rem;
-            font-size: 1.2rem;
+            margin-right: 0.6rem;
+            font-size: 1rem; /* 缩小图标字体 */
         }
 
         /* 語言選擇器 */
         .lang-selector {
-            padding: 1.5rem;
+            padding: 1.2rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             background-color: rgba(0, 0, 0, 0.2);
             display: flex;
@@ -225,11 +216,11 @@
         }
 
         .lang-btn {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.8rem;
             border: 1px solid rgba(255, 255, 255, 0.3);
             background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
             color: white;
@@ -274,7 +265,7 @@
         /* 數據統計面板 - 移除背景，初始隱藏 */
         .stats-panel {
             position: fixed; /* 改为fixed定位，使其不随页面滚动 */
-            top: 80px;
+            top: 70px; /* 调整位置以适应更小的标题栏 */
             left: 50%;
             transform: translateX(-50%) translateY(-100px);
             z-index: 10;
@@ -344,7 +335,7 @@
         /* 國家信息卡片 */
         .country-info {
             position: absolute;
-            top: 80px;
+            top: 70px; /* 调整位置以适应更小的标题栏 */
             left: 20px;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 8px;
@@ -603,11 +594,12 @@
         .footer-links a {
             color: #ddd;
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 0.8rem; /* 缩小字体以容纳长文本在同一行 */
             transition: color 0.2s;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            white-space: nowrap; /* 防止换行 */
         }
 
         .footer-links a:hover {
@@ -732,15 +724,15 @@
             z-index: 10;
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            transform: translateX(100px);
+            transform: translateY(-100px); /* 初始位置在上方 */
             opacity: 0;
             transition: all 0.8s ease-out;
             pointer-events: auto; /* 确保可以点击 */
         }
         
-        /* 資料來源隱藏動畫 - 向下消失 */
+        /* 資料來源隱藏動畫 - 從上向下消失 */
         .data-source.hide-down {
-            transform: translateX(0) translateY(100px);
+            transform: translateY(100px); /* 向下消失 */
             opacity: 0;
             pointer-events: none;
         }
@@ -757,7 +749,7 @@
         }
 
         .data-source.visible {
-            transform: translateX(0);
+            transform: translateY(0);
             opacity: 1;
         }
 
@@ -768,7 +760,7 @@
             }
 
             .logo {
-                font-size: 1.6rem;
+                font-size: 1.3rem; /* 桌面端稍大但仍保持较小 */
             }
 
             .features-grid {
@@ -783,16 +775,21 @@
             }
 
             .stats-panel {
-                top: 100px;
+                top: 80px;
             }
 
             .country-info {
-                top: 100px;
+                top: 80px;
                 left: 20px;
             }
 
             .notification-date {
                 min-width: 150px;
+            }
+            
+            /* 桌面端相关链接字体可以稍大，但仍确保长文本不换行 */
+            .footer-links a {
+                font-size: 0.85rem;
             }
         }
 
@@ -808,7 +805,7 @@
             }
 
             .stats-panel {
-                top: 120px;
+                top: 100px;
             }
 
             .notification-date {
@@ -851,6 +848,12 @@
             .notification-content {
                 padding-left: 0;
             }
+            
+            /* 移动端相关链接可能需要换行，但字体仍保持较小 */
+            .footer-links a {
+                font-size: 0.75rem;
+                white-space: normal; /* 允许换行 */
+            }
         }
     </style>
 </head>
@@ -859,10 +862,6 @@
     <header class="header" id="header">
         <nav class="navbar" aria-label="主導航">
             <a href="#" class="logo">
-                <div class="logo-images">
-                    <img src="ELCTP.png" alt="ELCTP" class="logo-image elctp">
-                    <img src="Escudos de Quíron.png" alt="Escudos de Quíron" class="logo-image escudo">
-                </div>
                 <span>領事保護與居民權利</span>
             </a>
             <button class="menu-toggle" aria-expanded="false" aria-controls="side-menu">
@@ -1719,7 +1718,7 @@
                     statsPanel.classList.add('visible');
                 }, 300);
                 
-                // 顯示資料來源（從左向右飄動）
+                // 顯示資料來源（從上向下飄動）
                 setTimeout(() => {
                     dataSource.classList.add('visible');
                 }, 500);
