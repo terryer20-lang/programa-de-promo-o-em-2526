@@ -423,6 +423,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s;
             cursor: pointer;
+            text-decoration: none;
         }
 
         .feature-item:hover {
@@ -896,15 +897,15 @@
             
             <div class="menu-section">
                 <h3>緊急服務</h3>
-                <a href="#" class="menu-item">
+                <a href="emergency.html" class="menu-item">
                     <span class="menu-item-icon">🚨</span>
                     <span>緊急求助專區 <span class="emergency-badge">24小時</span></span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="upcoming-trip.html" class="menu-item">
                     <span class="menu-item-icon">✈️</span>
                     <span>「我即將出國」專區</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="overseas-difficulty.html" class="menu-item">
                     <span class="menu-item-icon">🆘</span>
                     <span>「我在海外遇到困難」專區</span>
                 </a>
@@ -912,21 +913,41 @@
             
             <div class="menu-section">
                 <h3>資訊資源</h3>
-                <a href="#" class="menu-item">
+                <a href="risk-map.html" class="menu-item">
                     <span class="menu-item-icon">🗺️</span>
                     <span>全球風險地圖</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="podcast.html" class="menu-item">
                     <span class="menu-item-icon">🎧</span>
                     <span>播客集</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="short-videos.html" class="menu-item">
                     <span class="menu-item-icon">🎬</span>
                     <span>一分鐘短片集</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="resources.html" class="menu-item">
                     <span class="menu-item-icon">📚</span>
                     <span>資源專區</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <h3>專區服務</h3>
+                <a href="emergency.html" class="menu-item">
+                    <span class="menu-item-icon">🚨</span>
+                    <span>緊急求助專區</span>
+                </a>
+                <a href="consular-protection.html" class="menu-item">
+                    <span class="menu-item-icon">🛡️</span>
+                    <span>領事保護專區</span>
+                </a>
+                <a href="rights.html" class="menu-item">
+                    <span class="menu-item-icon">📋</span>
+                    <span>居民身份權利專區</span>
+                </a>
+                <a href="schedule.html" class="menu-item">
+                    <span class="menu-item-icon">📅</span>
+                    <span>活動日程</span>
                 </a>
             </div>
         </div>
@@ -992,29 +1013,29 @@
         <section id="features" class="features-section" aria-labelledby="features-heading">
             <h2 class="section-title" id="features-heading">專區服務</h2>
             <div class="features-grid">
-                <div class="feature-item">
+                <a href="emergency.html" class="feature-item">
                     <div class="feature-icon">🚨</div>
                     <h3>緊急求助專區</h3>
                     <p class="feature-desc">24小時緊急求助聯繫方式</p>
-                </div>
+                </a>
                 
-                <div class="feature-item">
+                <a href="consular-protection.html" class="feature-item">
                     <div class="feature-icon">🛡️</div>
                     <h3>領事保護專區</h3>
                     <p class="feature-desc">了解您在海外的權利</p>
-                </div>
+                </a>
                 
-                <div class="feature-item">
+                <a href="rights.html" class="feature-item">
                     <div class="feature-icon">📋</div>
                     <h3>居民身份權利專區</h3>
                     <p class="feature-desc">維護自身合法權益</p>
-                </div>
+                </a>
                 
-                <div class="feature-item">
+                <a href="schedule.html" class="feature-item">
                     <div class="feature-icon">📅</div>
                     <h3>活動日程</h3>
                     <p class="feature-desc">最新宣傳活動安排</p>
-                </div>
+                </a>
             </div>
         </section>
 
@@ -1338,7 +1359,7 @@
                 noData: '#666'        // 灰色 - 無數據
             };
             
-            // 國家數據 (從原CSV轉換) - 修正了一處拼寫錯誤
+            // 國家數據 (從原CSV轉換)
             const countryData = [
                 {"flagCode":"PK","country":"Pakistan","GlobalPeaceIndex_2025":2.8,"SafestCountriesIndexViaTravelSafe":26,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null},
                 {"flagCode":"RU","country":"Russia","GlobalPeaceIndex_2025":3.44,"SafestCountriesIndexViaTravelSafe":34,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":80},
@@ -1355,7 +1376,7 @@
                 {"flagCode":"CM","country":"Cameroon","GlobalPeaceIndex_2025":2.68,"SafestCountriesIndexViaTravelSafe":36,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":84},
                 {"flagCode":"VE","country":"Venezuela","GlobalPeaceIndex_2025":2.69,"SafestCountriesIndexViaTravelSafe":33,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null},
                 {"flagCode":"NE","country":"Niger","GlobalPeaceIndex_2025":2.76,"SafestCountriesIndexViaTravelSafe":37,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null},
-                {"flagCode":"KP","country":"North Korea","GlobalPeaceIndex_2025":2.91,"SafestCountriesIndexViaTravelSafe":21,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null}, // 修正了這裡的拼寫錯誤
+                {"flagCode":"KP","country":"North Korea","GlobalPeaceIndex_2025":2.91,"SafestCountriesIndexViaTravelSafe":21,"RiskLevelByCountryViaTravelSafe":"High","SafestCompaniesRankUSNews_2024":null},
                 {"flagCode":"SY","country":"Syria","GlobalPeaceIndex_2025":3.18,"SafestCountriesIndexViaTravelSafe":10,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null},
                 {"flagCode":"ML","country":"Mali","GlobalPeaceIndex_2025":3.06,"SafestCountriesIndexViaTravelSafe":31,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null},
                 {"flagCode":"TD","country":"Chad","GlobalPeaceIndex_2025":2.59,"SafestCountriesIndexViaTravelSafe":32,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null},
@@ -2148,13 +2169,11 @@
                 });
             });
             
-            // 專區項目點擊事件
+            // 專區項目點擊事件 - 更新為直接鏈接，無需JS處理
             document.querySelectorAll('.feature-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const icon = this.querySelector('.feature-icon').textContent;
-                    const title = this.querySelector('h3').textContent;
-                    console.log(`點擊專區: ${title} (${icon})`);
-                    // 這裡可以添加導航到對應專區的邏輯
+                item.addEventListener('click', function(e) {
+                    // 鏈接已設置，無需額外處理
+                    console.log(`導航到: ${this.getAttribute('href')}`);
                 });
             });
             
