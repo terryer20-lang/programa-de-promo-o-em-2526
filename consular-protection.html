@@ -86,6 +86,10 @@
             gap: 0.3rem;
         }
 
+        .logo:hover {
+            color: #ffffff;
+        }
+
         /* 移除logo图片样式 */
         .logo-images {
             display: none;
@@ -154,6 +158,16 @@
             font-size: 1.2rem;
             margin-bottom: 0.3rem;
             color: #FFD700;
+        }
+
+        .menu-header h2 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .menu-header h2 a:hover {
+            color: #ffffff;
+            text-decoration: underline;
         }
 
         .menu-header p {
@@ -718,7 +732,8 @@
     <!-- 導航欄 - 初始隱藏 -->
     <header class="header" id="header">
         <nav class="navbar" aria-label="主導航">
-            <a href="#" class="logo">
+            <!-- 修改：標題現在點擊後返回主頁 -->
+            <a href="index.html" class="logo">
                 <span>領事保護與居民權利</span>
             </a>
             <button class="menu-toggle" aria-expanded="false" aria-controls="side-menu">
@@ -734,7 +749,8 @@
     <!-- 側邊菜單 -->
     <aside class="side-menu" id="side-menu">
         <div class="menu-header">
-            <h2>領事保護與居民權利</h2>
+            <!-- 修改：側邊菜單標題也添加連結返回主頁 -->
+            <h2><a href="index.html">領事保護與居民權利</a></h2>
             <p>您的海外安全守護者</p>
         </div>
         
