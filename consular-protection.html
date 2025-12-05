@@ -44,24 +44,24 @@
             justify-content: center;
         }
 
-        /* 導航欄 - 更新背景為hero模板的漸變，初始隱藏 */
+        /* 導航欄 - 更新背景為hero模板的漸變，初始隱藏並在上方 */
         .header {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             z-index: 1000;
-            padding: 0.5rem 1rem; /* 减少内边距使标题列更小 */
+            padding: 0.5rem 1rem;
             background: linear-gradient(135deg, rgba(26, 43, 109, 0.95) 0%, rgba(213, 43, 30, 0.95) 100%);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            transition: transform 0.5s ease-out;
-            transform: translateY(-100%);
+            transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+            transform: translateY(-100%); /* 初始位置：在上方不可見 */
             opacity: 0;
-            height: 60px; /* 固定高度使标题列更小 */
+            height: 60px;
         }
 
         .header.visible {
-            transform: translateY(0);
+            transform: translateY(0); /* 最終位置：在頂部可見 */
             opacity: 1;
         }
 
@@ -77,28 +77,28 @@
         }
 
         .logo {
-            font-size: 1.1rem; /* 缩小字体 */
+            font-size: 1.1rem;
             font-weight: bold;
             color: #FFD700;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.3rem; /* 减少间距 */
+            gap: 0.3rem;
         }
 
         /* 移除logo图片样式 */
         .logo-images {
-            display: none; /* 隐藏图片 */
+            display: none;
         }
 
         .logo-image {
-            display: none; /* 隐藏图片 */
+            display: none;
         }
 
         .menu-toggle {
             background: none;
             border: none;
-            font-size: 1.5rem; /* 缩小汉堡菜单图标 */
+            font-size: 1.5rem;
             cursor: pointer;
             color: #FFD700;
             padding: 0.5rem;
@@ -145,20 +145,20 @@
         }
 
         .menu-header {
-            padding: 1.2rem; /* 减少内边距 */
+            padding: 1.2rem;
             background: rgba(0, 0, 0, 0.2);
             color: white;
         }
 
         .menu-header h2 {
-            font-size: 1.2rem; /* 缩小字体 */
+            font-size: 1.2rem;
             margin-bottom: 0.3rem;
             color: #FFD700;
         }
 
         .menu-header p {
             opacity: 0.9;
-            font-size: 0.8rem; /* 缩小字体 */
+            font-size: 0.8rem;
         }
 
         .menu-content {
@@ -171,7 +171,7 @@
         }
 
         .menu-section h3 {
-            font-size: 1rem; /* 缩小字体 */
+            font-size: 1rem;
             color: #FFD700;
             margin-bottom: 0.8rem;
             padding-bottom: 0.3rem;
@@ -185,7 +185,7 @@
             color: white;
             text-decoration: none;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.85rem; /* 缩小字体 */
+            font-size: 0.85rem;
             transition: all 0.2s;
         }
 
@@ -199,10 +199,10 @@
         }
 
         .menu-item-icon {
-            width: 25px; /* 缩小图标容器 */
+            width: 25px;
             text-align: center;
             margin-right: 0.6rem;
-            font-size: 1rem; /* 缩小图标字体 */
+            font-size: 1rem;
         }
 
         /* 語言選擇器 */
@@ -247,7 +247,7 @@
             width: 100%;
             height: 100vh;
             background: linear-gradient(to bottom, #0a0f2e 0%, #1A2B6D 100%);
-            z-index: -1; /* 设置为背景 */
+            z-index: -1;
         }
 
         #globe-container {
@@ -266,10 +266,18 @@
         .content-section {
             position: relative;
             z-index: 10;
-            margin-top: 80px; /* 给标题栏留出空间 */
+            margin-top: 80px;
             padding: 2rem 1.5rem;
             color: white;
-            min-height: calc(100vh - 60px); /* 减去标题栏高度 */
+            min-height: calc(100vh - 60px);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out 0.3s, transform 0.8s ease-out 0.3s;
+        }
+
+        .content-section.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* 頁面標題 */
@@ -430,7 +438,7 @@
             transform: translateY(50px);
             opacity: 0;
             transition: transform 0.8s ease-out, opacity 0.8s ease-out;
-            transition-delay: 0.4s;
+            transition-delay: 0.6s;
         }
 
         #footer.visible {
@@ -467,12 +475,12 @@
         .footer-links a {
             color: #ddd;
             text-decoration: none;
-            font-size: 0.8rem; /* 缩小字体以容纳长文本在同一行 */
+            font-size: 0.8rem;
             transition: color 0.2s;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            white-space: nowrap; /* 防止换行 */
+            white-space: nowrap;
         }
 
         .footer-links a:hover {
@@ -530,6 +538,12 @@
             padding: 2rem;
             border-radius: 12px;
             backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .earth-loading.visible {
+            opacity: 1;
         }
 
         .loading-spinner {
@@ -614,7 +628,7 @@
             }
 
             .logo {
-                font-size: 1.3rem; /* 桌面端稍大但仍保持较小 */
+                font-size: 1.3rem;
             }
 
             .content-section {
@@ -640,7 +654,6 @@
                 min-width: 150px;
             }
             
-            /* 桌面端相关链接字体可以稍大，但仍确保长文本不换行 */
             .footer-links a {
                 font-size: 0.85rem;
             }
@@ -694,10 +707,9 @@
                 padding-left: 0;
             }
             
-            /* 移动端相关链接可能需要换行，但字体仍保持较小 */
             .footer-links a {
                 font-size: 0.75rem;
-                white-space: normal; /* 允许换行 */
+                white-space: normal;
             }
         }
     </style>
@@ -800,7 +812,7 @@
         </section>
 
         <!-- 內容區域 -->
-        <section class="content-section">
+        <section class="content-section" id="content-section">
             <h1 class="page-title">領事保護專區</h1>
             
             <!-- 主要內容卡片 -->
@@ -898,6 +910,7 @@
             const sideMenu = document.getElementById('side-menu');
             const menuOverlay = document.getElementById('menu-overlay');
             const earthLoading = document.getElementById('earth-loading');
+            const contentSection = document.getElementById('content-section');
             const langButtons = document.querySelectorAll('.lang-btn');
             const footer = document.getElementById('footer');
             
@@ -909,16 +922,14 @@
             
             // D3.js 變數
             let width, height, svg, projection, path, globeGroup, countryPaths;
-            let isDragging = false;
-            let lastX, lastY;
             
             // 自動旋轉控制變數
             let autoRotate = true;
-            let rotationSpeed = 0.1; // 每幀旋轉角度（比主頁稍慢）
+            let rotationSpeed = 0.1; // 每幀旋轉角度（緩慢自轉）
             let animationId = null;
             
             // 頁面狀態
-            let isInitialAnimationComplete = false;
+            let isEarthLoaded = false;
             
             // 漢堡菜單切換功能
             function toggleMenu() {
@@ -981,7 +992,7 @@
                 
                 lastScrollTop = scrollTop;
             });
-
+            
             // 自動旋轉動畫
             function autoRotateAnimation() {
                 // 始終自動旋轉
@@ -1000,23 +1011,36 @@
                 animationId = requestAnimationFrame(autoRotateAnimation);
             }
             
-            // 顯示界面元素
+            // 顯示界面元素 - 從標題列從上往下進入開始
             function showInterfaceElements() {
-                // 顯示導航欄（從上向下飄動）
+                // 顯示地球載入提示
+                earthLoading.classList.add('visible');
+                
+                // 延遲後顯示標題列（從上往下進入）
                 setTimeout(() => {
                     header.classList.add('visible');
-                }, 100);
+                }, 300);
                 
-                // 顯示頁腳
-                setTimeout(() => {
-                    footer.classList.add('visible');
-                }, 500);
-                
-                // 標記初始動畫完成
-                isInitialAnimationComplete = true;
+                // 地球加載完成後顯示內容區域和頁腳
+                if (isEarthLoaded) {
+                    showContentAndFooter();
+                }
             }
             
-            // 初始化D3地球（簡化版，僅用於背景）
+            // 顯示內容區域和頁腳
+            function showContentAndFooter() {
+                // 顯示內容區域（淡入和上移動畫）
+                setTimeout(() => {
+                    contentSection.classList.add('visible');
+                }, 500);
+                
+                // 顯示頁腳（從下往上淡入）
+                setTimeout(() => {
+                    footer.classList.add('visible');
+                }, 800);
+            }
+            
+            // 初始化D3地球（簡化版，僅用於背景，緩慢自轉）
             function initEarth() {
                 const container = document.getElementById('globe-container');
                 width = container.clientWidth;
@@ -1026,11 +1050,11 @@
                     .attr('width', width)
                     .attr('height', height);
                 
-                // 設置3D正射投影 - 只能旋轉，不能縮放
+                // 設置3D正射投影
                 projection = d3.geoOrthographic()
                     .scale(Math.min(width, height) / 2.5)
                     .translate([width / 2, height / 2])
-                    .rotate([-30, -20, 0])
+                    .rotate([-30, -20, 0]) // 固定初始視角
                     .precision(0.1);
                 
                 path = d3.geoPath(projection);
@@ -1045,7 +1069,7 @@
                     .attr("class", "graticule")
                     .attr("d", path)
                     .attr("fill", "none")
-                    .attr("stroke", "rgba(255, 255, 255, 0.1)") // 更淡的顏色作為背景
+                    .attr("stroke", "rgba(255, 255, 255, 0.1)")
                     .attr("stroke-width", 0.3)
                     .attr("stroke-dasharray", "2,2");
                 
@@ -1057,15 +1081,21 @@
                             earthLoading.style.opacity = '0';
                             setTimeout(() => {
                                 earthLoading.style.display = 'none';
+                                earthLoading.classList.remove('visible');
                                 
-                                // 顯示界面元素
-                                showInterfaceElements();
+                                // 標記地球已加載
+                                isEarthLoaded = true;
                                 
-                                // 開始自動旋轉
+                                // 開始緩慢的自轉動畫
                                 autoRotateAnimation();
                                 
+                                // 如果標題列已顯示，則顯示內容區域和頁腳
+                                if (header.classList.contains('visible')) {
+                                    showContentAndFooter();
+                                }
+                                
                             }, 500);
-                        }, 1000);
+                        }, 800);
                         
                         const countries = topojson.feature(worldData, worldData.objects.countries).features;
                         
@@ -1075,7 +1105,7 @@
                             .enter().append("path")
                             .attr("class", "country")
                             .attr("d", path)
-                            .attr("fill", "rgba(255, 255, 255, 0.05)") // 非常淡的顏色
+                            .attr("fill", "rgba(255, 255, 255, 0.05)")
                             .attr("stroke", "rgba(255, 255, 255, 0.1)")
                             .attr("stroke-width", 0.2)
                             .style("cursor", "default");
@@ -1086,16 +1116,8 @@
                             .attr("class", "sphere-outline")
                             .attr("d", path)
                             .attr("fill", "none")
-                            .attr("stroke", "rgba(255, 255, 255, 0.15)") // 淡色輪廓
+                            .attr("stroke", "rgba(255, 255, 255, 0.15)")
                             .attr("stroke-width", 0.5);
-                        
-                        // 繪製透明的球體用於拖動（禁用交互）
-                        const dragSphere = globeGroup.append("path")
-                            .datum({type: "Sphere"})
-                            .attr("class", "globe-drag-area")
-                            .attr("d", path)
-                            .attr("fill", "transparent")
-                            .style("cursor", "default");
                         
                     })
                     .catch(err => {
@@ -1104,8 +1126,12 @@
                             <div style="color:#e74c3c;">載入地圖數據失敗</div>
                             <div style="font-size:0.9rem; margin-top:0.5rem;">請檢查網絡連接後刷新頁面</div>
                         `;
-                        // 即使載入失敗也顯示界面元素
-                        showInterfaceElements();
+                        
+                        // 即使載入失敗也標記為已加載並顯示內容
+                        isEarthLoaded = true;
+                        if (header.classList.contains('visible')) {
+                            showContentAndFooter();
+                        }
                     });
                 
                 // 響應式調整
@@ -1124,14 +1150,19 @@
                         countryPaths.attr("d", path);
                         d3.select(".graticule").attr("d", path);
                         d3.select(".sphere-outline").attr("d", path);
-                        d3.select(".globe-drag-area").attr("d", path);
                     }
                 });
             }
             
-            // 初始化地球（在頁面完全加載後）
+            // 初始化頁面
+            document.documentElement.lang = 'zh-TW';
+            
+            // 頁面加載後開始初始化流程
             window.addEventListener('load', function() {
-                // 延遲初始化以確保頁面完全加載
+                // 立即開始顯示界面元素（從標題列開始）
+                showInterfaceElements();
+                
+                // 初始化地球（緩慢自轉背景）
                 setTimeout(initEarth, 500);
             });
             
@@ -1139,13 +1170,14 @@
             setTimeout(function() {
                 if (earthLoading.style.display !== 'none') {
                     earthLoading.innerHTML = "地圖載入失敗，顯示背景圖...<br><small>請檢查網絡連接</small>";
-                    // 即使載入失敗也顯示界面元素
-                    showInterfaceElements();
+                    
+                    // 標記地球已加載（失敗狀態）
+                    isEarthLoaded = true;
+                    if (header.classList.contains('visible')) {
+                        showContentAndFooter();
+                    }
                 }
             }, 10000);
-
-            // 初始化頁面
-            document.documentElement.lang = 'zh-TW';
         });
     </script>
 </body>
