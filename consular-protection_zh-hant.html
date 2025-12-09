@@ -160,19 +160,36 @@
             color: #FFD700;
         }
 
-        .menu-header h2 a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        .menu-header h2 a:hover {
-            color: #ffffff;
-            text-decoration: underline;
-        }
-
         .menu-header p {
             opacity: 0.9;
             font-size: 0.8rem;
+        }
+
+        /* 語言選擇器 - 移動到菜單頂部 */
+        .lang-selector {
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .lang-btn.active {
+            background-color: #f6d52a;
+            color: #000000;
+            border-color: #f6d52a;
         }
 
         .menu-content {
@@ -217,33 +234,6 @@
             text-align: center;
             margin-right: 0.6rem;
             font-size: 1rem;
-        }
-
-        /* 語言選擇器 */
-        .lang-selector {
-            padding: 1.2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background-color: rgba(0, 0, 0, 0.2);
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .lang-btn {
-            padding: 0.4rem 0.8rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: white;
-        }
-
-        .lang-btn.active {
-            background-color: #FFD700;
-            color: #1A2B6D;
-            border-color: #FFD700;
         }
 
         /* 主容器 */
@@ -746,25 +736,30 @@
     <!-- 側邊菜單遮罩 -->
     <div class="menu-overlay" id="menu-overlay"></div>
 
-    <!-- 側邊菜單 - 已刪除全球安全指數地圖連結 -->
+    <!-- 側邊菜單 - 從index.html複製 -->
     <aside class="side-menu" id="side-menu">
         <div class="menu-header">
-            <!-- 修改：側邊菜單標題也添加連結返回主頁 -->
-            <h2><a href="index.html">領事保護與居民權利</a></h2>
+            <h2>領事保護與居民權利</h2>
             <p>您的海外安全守護者</p>
+        </div>
+        
+        <!-- 語言選擇器 - 移動到菜單頂部 -->
+        <div class="lang-selector">
+            <button class="lang-btn" data-lang="zh-hant" onclick="switchLanguage('zh-hant')">繁</button>
+            <button class="lang-btn" data-lang="zh-hans" onclick="switchLanguage('zh-hans')">简</button>
+            <button class="lang-btn" data-lang="pt" onclick="switchLanguage('pt')">PT</button>
         </div>
         
         <div class="menu-content">
             <div class="menu-section">
                 <h3>特色活動</h3>
-                <!-- 已刪除：全球安全指數地圖連結 -->
                 <a href="weekly-challenge_zh-hant.html" class="menu-item">
                     <span class="menu-item-icon">⭐</span>
                     <span>「領保之星」每週主題挑戰賽</span>
                 </a>
                 <a href="safety-quiz_zh-hant.html" class="menu-item">
-                    <span class="menu-item-icon">📊</span>
-                    <span>「海外旅行安全指數」小測試</span>
+                      <span class="menu-item-icon">📊</span>
+                     <span>「海外旅行安全指數」小測試</span>
                 </a>
             </div>
             
@@ -786,7 +781,6 @@
             
             <div class="menu-section">
                 <h3>資訊資源</h3>
-                <!-- 全球風險地圖在資訊資源區 -->
                 <a href="risk-map_zh-hant.html" class="menu-item">
                     <span class="menu-item-icon">🗺️</span>
                     <span>全球風險地圖</span>
@@ -824,12 +818,6 @@
                     <span>活動日程</span>
                 </a>
             </div>
-        </div>
-        
-        <div class="lang-selector">
-            <button class="lang-btn active" data-lang="zh-TW" onclick="switchLanguage('zh-hant')">繁</button>
-            <button class="lang-btn" data-lang="zh-CN" onclick="switchLanguage('zh-hans')">简</button>
-            <button class="lang-btn" data-lang="pt" onclick="switchLanguage('pt')">PT</button>
         </div>
     </aside>
 
@@ -1112,6 +1100,15 @@
          * @param {string} targetLang - 目标语言代码 ('zh-hant', 'zh-hans', 'pt')
          */
         function switchLanguage(targetLang) {
+            // 获取当前激活的语言按钮
+            const activeButton = document.querySelector('.lang-btn.active');
+            
+            // 如果点击的按钮已经是激活状态，则直接返回，不执行任何操作
+            if (activeButton && activeButton.getAttribute('data-lang') === targetLang) {
+                console.log(`当前已是${targetLang}语言，无需切换`);
+                return;
+            }
+            
             // 1. 获取当前页面的文件名
             const currentPath = window.location.pathname;
             const currentFileName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
@@ -1189,29 +1186,45 @@
                 }
             });
 
-            // ==================== 修改：语言按钮事件监听器 ====================
-            // 添加语言按钮高亮（显示当前语言）
+            // ==================== 语言按钮高亮逻辑 ====================
+            /**
+             * 根据当前页面自动高亮对应的语言按钮
+             */
             function highlightCurrentLanguage() {
+                // 获取当前页面的文件名
                 const currentPath = window.location.pathname;
                 const currentFileName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+                
+                console.log(`当前文件名: ${currentFileName}`);
                 
                 // 移除所有按钮的active类
                 langButtons.forEach(btn => btn.classList.remove('active'));
                 
-                // 根据当前文件名确定语言并高亮对应按钮
-                if (currentFileName.includes('_zh-hant.html')) {
-                    const zhTwBtn = document.querySelector('.lang-btn[data-lang="zh-TW"]');
-                    if (zhTwBtn) zhTwBtn.classList.add('active');
+                // 根据文件名判断当前语言
+                let currentLang = '';
+                
+                if (currentFileName.includes('_zh-hant.html') || currentFileName === 'index.html') {
+                    currentLang = 'zh-hant';
                 } else if (currentFileName.includes('_zh-hans.html')) {
-                    const zhCnBtn = document.querySelector('.lang-btn[data-lang="zh-CN"]');
-                    if (zhCnBtn) zhCnBtn.classList.add('active');
+                    currentLang = 'zh-hans';
                 } else if (currentFileName.includes('_pt.html')) {
-                    const ptBtn = document.querySelector('.lang-btn[data-lang="pt"]');
-                    if (ptBtn) ptBtn.classList.add('active');
+                    currentLang = 'pt';
+                } else {
+                    // 默认情况下，假设是繁体中文
+                    currentLang = 'zh-hant';
+                }
+                
+                // 找到对应语言按钮并添加active类
+                const activeButton = document.querySelector(`.lang-btn[data-lang="${currentLang}"]`);
+                if (activeButton) {
+                    activeButton.classList.add('active');
+                    console.log(`高亮语言按钮: ${currentLang}`);
+                } else {
+                    console.warn(`找不到对应语言按钮: ${currentLang}`);
                 }
             }
             
-            // 初始化时高亮当前语言
+            // 页面加载时立即调用高亮函数
             highlightCurrentLanguage();
 
             // 滾動時隱藏/顯示導航欄和顯示動畫
