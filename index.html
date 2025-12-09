@@ -984,12 +984,10 @@
                     </div>
                 </div>
 
-                <!-- 國家信息卡片 -->
+                <!-- 國家信息卡片 - 簡化版本 -->
                 <div class="country-info" id="country-info">
                     <div class="country-name" id="country-name">選擇一個國家</div>
                     <div class="country-details" id="country-risk">風險等級: -</div>
-                    <div class="country-details" id="country-gpi">全球和平指數: -</div>
-                    <div class="country-details" id="country-rank">安全排名: -</div>
                 </div>
 
                 <!-- 資料來源標註 - 初始隱藏，添加超連結 -->
@@ -1271,12 +1269,22 @@
             }
         };
 
-        // ==================== 语言切换函数 ====================
+        // ==================== 改进的语言切换函数 ====================
         /**
          * 根据当前页面和目标语言代码进行导航
+         * 如果点击的是当前已激活的语言按钮，则不执行任何操作
          * @param {string} targetLang - 目标语言代码 ('zh-hant', 'zh-hans', 'pt')
          */
         function switchLanguage(targetLang) {
+            // 获取当前激活的语言按钮
+            const activeButton = document.querySelector('.lang-btn.active');
+            
+            // 如果点击的按钮已经是激活状态，则直接返回，不执行任何操作
+            if (activeButton && activeButton.getAttribute('data-lang') === targetLang) {
+                console.log(`当前已是${targetLang}语言，无需切换`);
+                return;
+            }
+            
             // 1. 获取当前页面的文件名
             const currentPath = window.location.pathname;
             const currentFileName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
@@ -1348,212 +1356,6 @@
             // 過濾狀態
             let activeFilter = null; // null, 'low', 'medium', 'high'
             
-            // 國家中文譯名映射 - 根據附件進行修正和補充
-            const chineseNames = {
-                "Afghanistan": "阿富汗",
-                "Albania": "阿爾巴尼亞",
-                "Algeria": "阿爾及利亞",
-                "Andorra": "安道爾",
-                "Angola": "安哥拉",
-                "Antigua and Barbuda": "安地卡及巴布達",
-                "Argentina": "阿根廷",
-                "Armenia": "亞美尼亞",
-                "Australia": "澳大利亞",
-                "Austria": "奧地利",
-                "Azerbaijan": "亞塞拜然",
-                "Bahamas": "巴哈馬",
-                "Bahrain": "巴林",
-                "Bangladesh": "孟加拉國",
-                "Barbados": "巴貝多",
-                "Belarus": "白俄羅斯",
-                "Belgium": "比利時",
-                "Belize": "貝里斯",
-                "Benin": "貝南",
-                "Bhutan": "不丹",
-                "Bolivia": "玻利維亞",
-                "Bosnia and Herzegovina": "波士尼亞赫塞哥維納",
-                "Botswana": "波札那",
-                "Brazil": "巴西",
-                "Brunei": "汶萊",
-                "Bulgaria": "保加利亞",
-                "Burkina Faso": "布吉納法索",
-                "Burundi": "蒲隆地",
-                "Cambodia": "柬埔寨",
-                "Cameroon": "喀麥隆",
-                "Canada": "加拿大",
-                "Cape Verde": "維德角",
-                "Central African Republic": "中非共和國",
-                "Chad": "查德",
-                "Chile": "智利",
-                "China": "中國",
-                "Colombia": "哥倫比亞",
-                "Comoros": "葛摩",
-                "Costa Rica": "哥斯大黎加",
-                "Côte d'Ivoire": "象牙海岸",
-                "Croatia": "克羅埃西亞",
-                "Cuba": "古巴",
-                "Cyprus": "賽普勒斯",
-                "Czech Republic": "捷克共和國",
-                "Czechia": "捷克",
-                "Democratic Republic of the Congo": "剛果民主共和國",
-                "Denmark": "丹麥",
-                "Djibouti": "吉布地",
-                "Dominica": "多米尼克",
-                "Dominican Republic": "多明尼加共和國",
-                "DR Congo": "剛果民主共和國",
-                "East Timor": "東帝汶",
-                "Ecuador": "厄瓜多",
-                "Egypt": "埃及",
-                "El Salvador": "薩爾瓦多",
-                "Equatorial Guinea": "赤道幾內亞",
-                "Eritrea": "厄利垂亞",
-                "Estonia": "愛沙尼亞",
-                "Ethiopia": "衣索比亞",
-                "Fiji": "斐濟",
-                "Finland": "芬蘭",
-                "France": "法國",
-                "Gabon": "加彭",
-                "Gambia": "甘比亞",
-                "Georgia": "喬治亞",
-                "Germany": "德國",
-                "Ghana": "迦納",
-                "Greece": "希臘",
-                "Grenada": "格瑞那達",
-                "Guatemala": "瓜地馬拉",
-                "Guinea": "幾內亞",
-                "Guinea-Bissau": "幾內亞比索",
-                "Guyana": "蓋亞那",
-                "Haiti": "海地",
-                "Honduras": "宏都拉斯",
-                "Hungary": "匈牙利",
-                "Iceland": "冰島",
-                "India": "印度",
-                "Indonesia": "印度尼西亞",
-                "Iran": "伊朗",
-                "Iraq": "伊拉克",
-                "Ireland": "愛爾蘭",
-                "Israel": "以色列",
-                "Italy": "義大利",
-                "Jamaica": "牙買加",
-                "Japan": "日本",
-                "Jordan": "約旦",
-                "Kazakhstan": "哈薩克斯坦",
-                "Kenya": "肯亞",
-                "Kiribati": "吉里巴斯",
-                "Kosovo": "科索沃",
-                "Kuwait": "科威特",
-                "Kyrgyzstan": "吉爾吉斯斯坦",
-                "Laos": "老撾",
-                "Latvia": "拉脫維亞",
-                "Lebanon": "黎巴嫩",
-                "Lesotho": "賴索托",
-                "Liberia": "賴比瑞亞",
-                "Libya": "利比亞",
-                "Liechtenstein": "列支敦斯登",
-                "Lithuania": "立陶宛",
-                "Luxembourg": "盧森堡",
-                "Madagascar": "馬達加斯加",
-                "Malawi": "馬拉威",
-                "Malaysia": "馬來西亞",
-                "Maldives": "馬爾地夫",
-                "Mali": "馬利",
-                "Malta": "馬爾他",
-                "Marshall Islands": "馬紹爾群島",
-                "Mauritania": "茅利塔尼亞",
-                "Mauritius": "模里西斯",
-                "Mexico": "墨西哥",
-                "Micronesia": "密克羅尼西亞聯邦",
-                "Moldova": "摩爾多瓦",
-                "Monaco": "摩納哥",
-                "Mongolia": "蒙古",
-                "Montenegro": "蒙特內哥羅",
-                "Morocco": "摩洛哥",
-                "Mozambique": "莫三比克",
-                "Myanmar": "緬甸",
-                "Namibia": "納米比亞",
-                "Nauru": "諾魯",
-                "Nepal": "尼泊爾",
-                "Netherlands": "荷蘭",
-                "New Zealand": "紐西蘭",
-                "Nicaragua": "尼加拉瓜",
-                "Niger": "尼日",
-                "Nigeria": "奈及利亞",
-                "North Korea": "朝鮮民主主義人民共和國",
-                "North Macedonia": "北馬其頓",
-                "Norway": "挪威",
-                "Oman": "阿曼",
-                "Pakistan": "巴基斯坦",
-                "Palau": "帛琉",
-                "Palestine": "巴勒斯坦",
-                "Panama": "巴拿馬",
-                "Papua New Guinea": "巴布亞紐幾內亞",
-                "Paraguay": "巴拉圭",
-                "Peru": "祕魯",
-                "Philippines": "菲律賓",
-                "Poland": "波蘭",
-                "Portugal": "葡萄牙",
-                "Qatar": "卡達",
-                "Republic of Korea": "大韓民國",
-                "Republic of the Congo": "剛果共和國",
-                "Romania": "羅馬尼亞",
-                "Russia": "俄羅斯聯邦",
-                "Rwanda": "盧安達",
-                "Saint Kitts and Nevis": "聖克里斯多福及尼維斯",
-                "Saint Lucia": "聖露西亞",
-                "Saint Vincent and the Grenadines": "聖文森及格瑞那丁",
-                "Samoa": "薩摩亞",
-                "San Marino": "聖馬利諾",
-                "São Tomé and Príncipe": "聖多美普林西比",
-                "Saudi Arabia": "沙烏地阿拉伯",
-                "Senegal": "塞內加爾",
-                "Serbia": "塞爾維亞",
-                "Seychelles": "塞席爾",
-                "Sierra Leone": "獅子山",
-                "Singapore": "新加坡",
-                "Slovakia": "斯洛伐克",
-                "Slovenia": "斯洛維尼亞",
-                "Solomon Islands": "索羅門群島",
-                "Somalia": "索馬利亞",
-                "South Africa": "南非",
-                "South Korea": "大韓民國",
-                "South Sudan": "南蘇丹",
-                "Spain": "西班牙",
-                "Sri Lanka": "斯里蘭卡",
-                "Sudan": "蘇丹",
-                "Suriname": "蘇利南",
-                "Swaziland": "史瓦濟蘭",
-                "Sweden": "瑞典",
-                "Switzerland": "瑞士",
-                "Syria": "敘利亞",
-                "Taiwan": "台灣",
-                "Tajikistan": "塔吉克斯坦",
-                "Tanzania": "坦尚尼亞",
-                "Thailand": "泰國",
-                "Timor-Leste": "東帝汶",
-                "Togo": "多哥",
-                "Tonga": "湯加",
-                "Trinidad and Tobago": "千里達及托巴哥",
-                "Tunisia": "突尼西亞",
-                "Turkey": "土耳其",
-                "Turkmenistan": "土庫曼斯坦",
-                "Tuvalu": "吐瓦魯",
-                "Uganda": "烏干達",
-                "Ukraine": "烏克蘭",
-                "United Arab Emirates": "阿拉伯聯合大公國",
-                "United Kingdom": "英國",
-                "United States": "美國",
-                "United States of America": "美國",
-                "Uruguay": "烏拉圭",
-                "Uzbekistan": "烏茲別克斯坦",
-                "Vanuatu": "萬那杜",
-                "Vatican City": "梵蒂岡",
-                "Venezuela": "委內瑞拉",
-                "Vietnam": "越南",
-                "Yemen": "葉門",
-                "Zambia": "尚比亞",
-                "Zimbabwe": "辛巴威"
-            };
-            
             // 風險等級顏色定義
             const colors = {
                 safe: '#4CAF50',      // 綠色 - 安全
@@ -1562,7 +1364,7 @@
                 noData: '#666'        // 灰色 - 無數據
             };
             
-            // 國家數據 (從原CSV轉換)
+            // 國家數據 (從原CSV轉換) - 僅保留風險等級數據
             const countryData = [
                 {"flagCode":"PK","country":"Pakistan","GlobalPeaceIndex_2025":2.8,"SafestCountriesIndexViaTravelSafe":26,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null},
                 {"flagCode":"RU","country":"Russia","GlobalPeaceIndex_2025":3.44,"SafestCountriesIndexViaTravelSafe":34,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":80},
@@ -1901,11 +1703,6 @@
                 return countryDataMap[mappedName] || null;
             }
             
-            // 獲取國家中文名稱
-            function getChineseName(englishName) {
-                return chineseNames[englishName] || englishName;
-            }
-            
             // 計算統計數據
             function calculateStatistics() {
                 let highRisk = 0, mediumRisk = 0, lowRisk = 0;
@@ -2095,12 +1892,11 @@
                                     else if (riskLevel === 'High') riskLevelChinese = '高';
                                     
                                     tooltip.innerHTML = `
-                                        <strong>${d.properties.name}（${getChineseName(d.properties.name)}）</strong><br/>
-                                        風險等級: ${riskLevelChinese}<br/>
-                                        和平指數: ${countryInfo.GlobalPeaceIndex_2025 || "N/A"}
+                                        <strong>${d.properties.name}</strong><br/>
+                                        風險等級: ${riskLevelChinese}
                                     `;
                                 } else {
-                                    tooltip.innerHTML = `<strong>${d.properties.name}（${getChineseName(d.properties.name)}）</strong><br/>無數據`;
+                                    tooltip.innerHTML = `<strong>${d.properties.name}</strong><br/>無數據`;
                                 }
                                 
                                 tooltip.style.display = 'block';
@@ -2270,12 +2066,9 @@
             function showCountryInfo(countryName, countryInfo) {
                 const countryNameElement = document.getElementById('country-name');
                 const countryRisk = document.getElementById('country-risk');
-                const countryGpi = document.getElementById('country-gpi');
-                const countryRank = document.getElementById('country-rank');
                 
-                // 設置國家名稱（包含中文譯名）
-                const chineseName = getChineseName(countryName);
-                countryNameElement.textContent = `${countryName}（${chineseName}）`;
+                // 設置國家名稱（僅顯示英文名稱）
+                countryNameElement.textContent = countryName;
                 
                 if (countryInfo) {
                     // 風險等級
@@ -2299,25 +2092,9 @@
                     }
                     
                     countryRisk.innerHTML = `風險等級: <span style="color: ${riskColor}">${riskText}</span>`;
-                    
-                    // 全球和平指數
-                    countryGpi.textContent = countryInfo.GlobalPeaceIndex_2025 ? 
-                        `全球和平指數: ${countryInfo.GlobalPeaceIndex_2025}` : 
-                        '全球和平指數: 數據缺失';
-                    
-                    // 安全排名
-                    if (countryInfo.SafestCountriesRankUSNews_2024) {
-                        countryRank.textContent = `安全排名: 第${countryInfo.SafestCountriesRankUSNews_2024}名`;
-                    } else if (countryInfo.SafestCountriesIndexViaTravelSafe) {
-                        countryRank.textContent = `旅行安全指數: ${countryInfo.SafestCountriesIndexViaTravelSafe}/100`;
-                    } else {
-                        countryRank.textContent = '安全排名: 數據缺失';
-                    }
                 } else {
                     // 無數據的情況
                     countryRisk.textContent = '風險等級: 數據缺失';
-                    countryGpi.textContent = '全球和平指數: 數據缺失';
-                    countryRank.textContent = '安全排名: 數據缺失';
                 }
                 
                 // 顯示卡片
