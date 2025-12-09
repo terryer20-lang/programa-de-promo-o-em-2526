@@ -884,8 +884,8 @@
         
         <!-- 語言選擇器 - 移動到菜單頂部 -->
         <div class="lang-selector">
-            <button class="lang-btn active" data-lang="zh-TW" onclick="switchLanguage('zh-hant')">繁</button>
-            <button class="lang-btn" data-lang="zh-CN" onclick="switchLanguage('zh-hans')">简</button>
+            <button class="lang-btn" data-lang="zh-hant" onclick="switchLanguage('zh-hant')">繁</button>
+            <button class="lang-btn" data-lang="zh-hans" onclick="switchLanguage('zh-hans')">简</button>
             <button class="lang-btn" data-lang="pt" onclick="switchLanguage('pt')">PT</button>
         </div>
         
@@ -1780,29 +1780,45 @@
                 }
             });
 
-            // ==================== 语言按钮事件监听器 ====================
-            // 添加语言按钮高亮（显示当前语言）
+            // ==================== 改进的语言按钮高亮逻辑 ====================
+            /**
+             * 根据当前页面自动高亮对应的语言按钮
+             */
             function highlightCurrentLanguage() {
+                // 获取当前页面的文件名
                 const currentPath = window.location.pathname;
                 const currentFileName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+                
+                console.log(`当前文件名: ${currentFileName}`);
                 
                 // 移除所有按钮的active类
                 langButtons.forEach(btn => btn.classList.remove('active'));
                 
-                // 根据当前文件名确定语言并高亮对应按钮
+                // 根据文件名判断当前语言
+                let currentLang = '';
+                
                 if (currentFileName.includes('_zh-hant.html') || currentFileName === 'index.html') {
-                    const zhTwBtn = document.querySelector('.lang-btn[data-lang="zh-TW"]');
-                    if (zhTwBtn) zhTwBtn.classList.add('active');
+                    currentLang = 'zh-hant';
                 } else if (currentFileName.includes('_zh-hans.html')) {
-                    const zhCnBtn = document.querySelector('.lang-btn[data-lang="zh-CN"]');
-                    if (zhCnBtn) zhCnBtn.classList.add('active');
+                    currentLang = 'zh-hans';
                 } else if (currentFileName.includes('_pt.html')) {
-                    const ptBtn = document.querySelector('.lang-btn[data-lang="pt"]');
-                    if (ptBtn) ptBtn.classList.add('active');
+                    currentLang = 'pt';
+                } else {
+                    // 默认情况下，假设是繁体中文
+                    currentLang = 'zh-hant';
+                }
+                
+                // 找到对应语言按钮并添加active类
+                const activeButton = document.querySelector(`.lang-btn[data-lang="${currentLang}"]`);
+                if (activeButton) {
+                    activeButton.classList.add('active');
+                    console.log(`高亮语言按钮: ${currentLang}`);
+                } else {
+                    console.warn(`找不到对应语言按钮: ${currentLang}`);
                 }
             }
             
-            // 初始化时高亮当前语言
+            // 页面加载时立即调用高亮函数
             highlightCurrentLanguage();
 
             // 滾動時隱藏/顯示導航欄和顯示動畫
