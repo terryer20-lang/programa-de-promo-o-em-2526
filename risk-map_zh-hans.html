@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球风险地图 - 领事保护与居民权利</title>
+    <style>
+        /* 基础重置与移动优先样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(180deg, #0a0f2e 0%, #1A2B6D 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* 触控目标至少44px */
+        button, 
+        a, 
+        .menu-toggle,
+        .btn,
+        .lang-btn,
+        .menu-item,
+        .stat-item,
+        .filter-btn,
+        .sort-btn,
+        .toggle-btn {
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 导航栏 - 更新背景为hero模板的渐变，初始隐藏并在上方 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(26, 43, 109, 0.95) 0%, rgba(213, 43, 30, 0.95) 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+            transform: translateY(-100%); /* 初始位置：在上方不可见 */
+            opacity: 0;
+            height: 60px;
+        }
+
+        .header.visible {
+            transform: translateY(0); /* 最终位置：在顶部可见 */
+            opacity: 1;
+        }
+
+        .header.hidden {
+            transform: translateY(-100%);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #FFD700;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+
+        /* 侧边菜单 - 更新背景为hero模板的渐变 */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 85%;
+            max-width: 400px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1A2B6D 0%, #D52B1E 100%);
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+            transition: right 0.4s ease-in-out;
+            z-index: 1002;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .side-menu.active {
+            right: 0;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+            z-index: 1001;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .menu-header {
+            padding: 1.2rem;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .menu-header h2 {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+            color: #FFD700;
+        }
+
+        .menu-header p {
+            opacity: 0.9;
+            font-size: 0.8rem;
+        }
+
+        /* 语言选择器 - 移动到菜单顶部 */
+        .lang-selector {
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .lang-btn.active {
+            background-color: #f6d52a;
+            color: #000000;
+            border-color: #f6d52a;
+        }
+
+        .menu-content {
+            flex: 1;
+            padding: 1.2rem;
+        }
+
+        .menu-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .menu-section h3 {
+            font-size: 1rem;
+            color: #FFD700;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 0;
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            color: #FFD700;
+            padding-left: 0.5rem;
+        }
+
+        .menu-item-icon {
+            width: 25px;
+            text-align: center;
+            margin-right: 0.6rem;
+            font-size: 1rem;
+        }
+
+        /* 主容器 */
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 地图容器 - 全画面作为背景 */
+        .map-section {
+            position: relative;
+            width: 100%;
+            height: 70vh;
+            min-height: 500px;
+            background: linear-gradient(to bottom, #0a0f2e 0%, #1A2B6D 100%);
+            z-index: 1;
+            margin-top: 60px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #map-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .static-map {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* 国家信息面板 */
+        .country-info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 12px;
+            padding: 1.5rem;
+            color: white;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+            max-width: 400px;
+            display: none;
+        }
+
+        .country-info-panel.visible {
+            transform: translateY(0);
+            opacity: 1;
+            display: block;
+        }
+
+        .country-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .country-info-header h3 {
+            color: #FFD700;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .close-info-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .country-info-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.3rem;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .info-value.high {
+            color: #ff6b6b;
+        }
+
+        .info-value.medium {
+            color: #ffcc00;
+        }
+
+        .info-value.low {
+            color: #7cfc00;
+        }
+
+        /* 内容区域 - 在地图下方 */
+        .content-section {
+            position: relative;
+            z-index: 10;
+            padding: 2rem 1.5rem;
+            color: white;
+            background-color: rgba(10, 15, 46, 0.95);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out 0.3s, transform 0.8s ease-out 0.3s;
+        }
+
+        .content-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 页面标题 */
+        .page-title {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 2rem;
+            color: #FFD700;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .page-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background-color: #D52B1E;
+        }
+
+        /* 风险数据表格 - 可折迭 */
+        .risk-data-section {
+            margin-top: 2rem;
+        }
+
+        .risk-data-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .sort-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .sort-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .sort-btn.active {
+            background-color: #f6d52a;
+            color: #000000;
+            border-color: #f6d52a;
+        }
+
+        .toggle-btn {
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, #1A2B6D 0%, #D52B1E 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem auto;
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-btn .icon {
+            transition: transform 0.3s;
+        }
+
+        .toggle-btn.collapsed .icon {
+            transform: rotate(180deg);
+        }
+
+        /* 数据表格容器 - 可折迭 */
+        .data-table-container {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+
+        .data-table-container.expanded {
+            max-height: 1000px;
+            opacity: 1;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background-color: rgba(26, 43, 109, 0.9);
+            color: #FFD700;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .data-table tr.selected {
+            background-color: rgba(255, 215, 0, 0.1);
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .risk-high-badge {
+            background-color: rgba(213, 43, 30, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(213, 43, 30, 0.5);
+        }
+
+        .risk-medium-badge {
+            background-color: rgba(255, 165, 0, 0.2);
+            color: #ffcc00;
+            border: 1px solid rgba(255, 165, 0, 0.5);
+        }
+
+        .risk-low-badge {
+            background-color: rgba(0, 128, 0, 0.2);
+            color: #7cfc00;
+            border: 1px solid rgba(0, 128, 0, 0.5);
+        }
+
+        /* 指标说明 */
+        .indicators-explanation {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #FFD700;
+        }
+
+        .indicators-explanation h3 {
+            color: #FFD700;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .indicator-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .indicator-item h4 {
+            color: #FFD700;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .indicator-item p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        /* 内容卡片 */
+        .content-card {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 12px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .content-card h2 {
+            font-size: 1.8rem;
+            color: #FFD700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .content-card h3 {
+            font-size: 1.4rem;
+            color: #FFD700;
+            margin: 1.5rem 0 1rem;
+        }
+
+        .content-card p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 页脚 - 在第三区块下面 */
+        #footer {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #ddd;
+            position: relative;
+            z-index: 20;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(50px);
+            opacity: 0;
+            transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+            transition-delay: 0.6s;
+        }
+
+        #footer.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .footer-content {
+            padding: 3rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .footer-section h3 {
+            color: #FFD700;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .footer-links a:hover {
+            color: #FFD700;
+        }
+
+        .footer-links a:before {
+            content: "›";
+            color: #FFD700;
+        }
+
+        .contact-text {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .contact-email {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.2rem;
+            border-radius: 4px;
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .contact-email:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .copyright {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #aaa;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 地图加载提示 */
+        .map-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            z-index: 2;
+            text-align: center;
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .map-loading.visible {
+            opacity: 1;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #FFD700;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 提示框 */
+        .tooltip {
+            position: absolute;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 250px;
+            display: none;
+        }
+
+        /* 辅助类 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .emergency-badge {
+            display: inline-block;
+            background-color: #D52B1E;
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+            font-weight: bold;
+        }
+
+        /* 桌面适配 (移动优先) */
+        @media (min-width: 768px) {
+            html {
+                font-size: 18px;
+            }
+
+            .logo {
+                font-size: 1.3rem;
+            }
+
+            .content-section {
+                padding: 3rem 2rem;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .content-card {
+                padding: 3rem;
+            }
+
+            .footer-content {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 3rem;
+            }
+
+            .map-section {
+                height: 75vh;
+            }
+
+            .country-info-panel {
+                left: auto;
+                right: 20px;
+                bottom: 20px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .content-section {
+                padding: 4rem 3rem;
+            }
+
+            .page-title {
+                font-size: 2.8rem;
+            }
+            
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 4rem;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .data-table th, 
+            .data-table td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            .risk-data-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .sort-buttons {
+                justify-content: center;
+            }
+
+            .map-section {
+                height: 60vh;
+                min-height: 400px;
+            }
+
+            .country-info-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 - 初始隐藏 -->
+    <header class="header" id="header">
+        <nav class="navbar" aria-label="主导航">
+            <!-- 修改：标题现在点击后返回主页 -->
+            <a href="index.html" class="logo">
+                <span>领事保护与居民权利</span>
+            </a>
+            <button class="menu-toggle" aria-expanded="false" aria-controls="side-menu">
+                ☰
+                <span class="sr-only">导航菜单</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- 侧边菜单屏蔽 -->
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <!-- 侧边菜单 - 从consular-protection复制 -->
+    <aside class="side-menu" id="side-menu">
+        <div class="menu-header">
+            <h2>领事保护与居民权利</h2>
+            <p>您的海外安全守护者</p>
+        </div>
+        
+        <!-- 语言选择器 - 移动到菜单顶部 -->
+        <div class="lang-selector">
+            <button class="lang-btn" data-lang="zh-hant" onclick="switchLanguage('zh-hant')">繁</button>
+            <button class="lang-btn" data-lang="zh-hans" onclick="switchLanguage('zh-hans')">简</button>
+            <button class="lang-btn" data-lang="pt" onclick="switchLanguage('pt')">PT</button>
+        </div>
+        
+        <div class="menu-content">
+            <div class="menu-section">
+                <h3>特色活动</h3>
+                <a href="weekly-challenge_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">⭐</span>
+                    <span>「领保之星」每周主题挑战赛</span>
+                </a>
+                <a href="safety-quiz_zh-hant.html" class="menu-item">
+                      <span class="menu-item-icon">📊</span>
+                     <span>「海外旅行安全指数」小测试</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <h3>紧急服务</h3>
+                <a href="emergency_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">🚨</span>
+                    <span>紧急求助专区 <span class="emergency-badge">24小时</span></span>
+                </a>
+                <a href="upcoming-trip_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">✈️</span>
+                    <span>「我即将出国」专区</span>
+                </a>
+                <a href="overseas-difficulty_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">🆘</span>
+                    <span>「我在海外遇到困难」专区</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <h3>信息资源</h3>
+                <a href="risk-map_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">🗺️</span>
+                    <span>全球风险地图</span>
+                </a>
+                <a href="podcast_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">🎧</span>
+                    <span>播客集</span>
+                </a>
+                <a href="short-videos_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">🎬</span>
+                    <span>一分钟短片集</span>
+                </a>
+                <a href="resources_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">📚</span>
+                    <span>资源专区</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <h3>专区服务</h3>
+                <a href="emergency_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">🚨</span>
+                    <span>紧急求助专区</span>
+                </a>
+                <a href="consular-protection_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">🛡️</span>
+                    <span>领事保护与协助专区</span>
+                </a>
+                <a href="rights_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">📋</span>
+                    <span>居民身份权利专区</span>
+                </a>
+                <a href="schedule_zh-hant.html" class="menu-item">
+                    <span class="menu-item-icon">📅</span>
+                    <span>活动日程</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 主内容区域 -->
+    <main class="main-container">
+        <!-- 地图区域 -->
+        <section class="map-section">
+            <!-- 地图容器 -->
+            <div id="map-container">
+                <!-- 静态风险地图图片 -->
+                <img src="风险地图.png" alt="全球风险地图" class="static-map" id="static-map">
+                
+                <!-- 如果图片加载失败显示备用讯息 -->
+                <div class="map-placeholder" id="map-placeholder" style="display:none;">
+                    全球风险地图<br>
+                    <small>地图图片加载失败，请检查图片路径</small>
+                </div>
+                
+                <!-- 国家信息面板 -->
+                <div class="country-info-panel" id="country-info-panel">
+                    <div class="country-info-header">
+                        <h3 id="country-name">选择一个国家</h3>
+                        <button class="close-info-btn" id="close-info-btn">×</button>
+                    </div>
+                    <div class="country-info-details">
+                        <div class="info-item full-width">
+                            <div class="info-label">国家英文名</div>
+                            <div class="info-value" id="country-name-en">-</div>
+                        </div>
+                        <div class="info-item full-width">
+                            <div class="info-label">国家中文名</div>
+                            <div class="info-value" id="country-name-zh">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">风险等级</div>
+                            <div class="info-value" id="risk-level">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">全球和平指数</div>
+                            <div class="info-value" id="gpi-index">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">旅行安全指数</div>
+                            <div class="info-value" id="travel-safe-index">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 内容区域 -->
+        <section class="content-section" id="content-section">
+            <h1 class="page-title">全球风险地图</h1>
+            
+            <!-- 主要内容卡片 -->
+            <div class="content-card">
+                <h2>全球风险概览</h2>
+                <p>本页面提供全球各国风险等级的可视化地图，数据来源包括2025年全球和平指数、旅行安全指数等多个国际权威指标。风险等级分为高、中、低三级，帮助您了解目的地的安全状况。</p>
+                
+                <!-- 指标说明 -->
+                <div class="indicators-explanation">
+                    <h3>风险指标说明</h3>
+                    
+                    <div class="indicator-item">
+                        <h4>全球和平指数 (Global Peace Index)</h4>
+                        <p>由经济与和平研究所编制，衡量国家和地区的和平程度。分数越低表示越和平（1.0-1.5为非常和平，3.5-5.0为非常不和平）。</p>
+                    </div>
+                    
+                    <div class="indicator-item">
+                        <h4>旅行安全指数 (TravelSafe Index)</h4>
+                        <p>评估国家对旅行者的安全程度，分数越高表示越安全（0-100分）。</p>
+                    </div>
+                    
+                    <div class="indicator-item">
+                        <h4>风险等级 (Risk Level)</h4>
+                        <p>综合多项指标将国家分为高、中、低三个风险等级，为旅行者提供清晰的风险参考。</p>
+                    </div>
+                </div>
+                
+                <!-- 风险数据表格 -->
+                <div class="risk-data-section">
+                    <div class="risk-data-header">
+                        <h3>国家风险数据</h3>
+                        <input type="text" class="search-box" id="country-search" placeholder="搜寻国家的繁体中文名称..." aria-label="搜寻国家">
+                        <div class="sort-buttons">
+                            <button class="sort-btn" data-sort="risk" data-order="asc">风险等级 ↑</button>
+                            <button class="sort-btn" data-sort="gpi" data-order="asc">和平指数 ↑</button>
+                            <button class="sort-btn" data-sort="travel" data-order="asc">旅行安全指数 ↑</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 折迭/展开按钮 -->
+                    <button class="toggle-btn" id="toggle-table-btn">
+                        <span class="icon">▼</span>
+                        <span>显示详细数据表</span>
+                    </button>
+                    
+                    <!-- 数据表格容器 -->
+                    <div class="data-table-container" id="data-table-container">
+                        <table class="data-table" id="risk-data-table">
+                            <thead>
+                                <tr>
+                                    <th>国家</th>
+                                    <th>风险等级</th>
+                                    <th>全球和平指数 (2025)</th>
+                                    <th>旅行安全指数</th>
+                                    <th>最安全国家排名 (2024)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="risk-table-body">
+                                <!-- 数据将通过JavaScript动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="info-box" style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; padding: 1.5rem; margin: 2rem 0;">
+                        <h4>⚠️ 重要提醒</h4>
+                        <p>本页面提供的风险数据仅供参考，实际旅行安全状况可能随时变化。建议在出行前查阅最新的旅行建议和安全通告，并根据实际情况调整行程安排。</p>
+                    </div>
+                    
+                    <h3>如何使用风险地图</h3>
+                    <ol>
+                        <li><strong>查看地图</strong> - 上方为全球风险地图，显示各国风险等级</li>
+                        <li><strong>搜寻国家</strong> - 在搜寻框中输入国家名称快速查找</li>
+                        <li><strong>查看详细数据</strong> - 点击表格中的国家查看详细风险信息</li>
+                        <li><strong>排序表格</strong> - 点击表头按不同指针排序数据</li>
+                    </ol>
+                    
+                    <!-- 只保留一个返回主页按钮 -->
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                        <a href="index.html" class="action-button" style="display: inline-block; background: linear-gradient(135deg, #1A2B6D 0%, #D52B1E 100%); color: white; padding: 0.8rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; margin-top: 1rem;">返回主页</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer id="footer" class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>相关连结</h3>
+                <ul class="footer-links">
+                    <li><a href="https://www.fmprc.gov.cn/web/" target="_blank">中华人民共和国外交部</a></li>
+                    <li><a href="https://portaldascomunidades.mne.gov.pt/pt/" target="_blank">葡萄牙共和国外交部</a></li>
+                    <li><a href="https://cs.mfa.gov.cn/" target="_blank">中国领事服务网</a></li>
+                    <li><a href="https://mo.ocmfa.gov.cn/chn/" target="_blank">中华人民共和国外交部驻澳门特别行政区特派员公署</a></li>
+                    <li><a href="https://www.gov.mo/zh-hant/" target="_blank">澳门特别行政区政府入口网站</a></li>
+                    <li><a href="https://www.dsi.gov.mo/index_cn.jsp" target="_blank">澳门特别行政区政府身份证明局</a></li>
+                    <li><a href="https://www.elctp.k12.edu.mo/elctp/" target="_blank">澳门中葡职业技术学校</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>联络我们</h3>
+                <p class="contact-text">
+                    本网站由一群中学生自主开发，旨在增进公众对领事保护、协助服务及居民身份权利的认识与关注。由于团队成员学业繁忙，网站信息将不定期更新与维护，如有不便，敬请理解。
+                    <br><br>
+                    我们诚挚欢迎您对网站用户界面提出宝贵意见，若发现信息有误也欢迎指正。
+                </p>
+                <a href="mailto:infodoprogramaem2526@gmail.com" class="contact-email">infodoprogramaem2526@gmail.com</a>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            © 2025-2026 中葡职业技术学校高三翻译宣传领事保护与协助和居民权利小组（Escudos de Quíron） 版权所有
+        </div>
+    </footer>
+
+    <!-- 提示框 -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // ==================== 风险数据 ====================
+        const riskData = [
+            // 高风险国家
+            {"flagCode":"PK","country":"巴基斯坦","GlobalPeaceIndex_2025":2.8,"SafestCountriesIndexViaTravelSafe":26,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"RU","country":"俄罗斯","GlobalPeaceIndex_2025":3.44,"SafestCountriesIndexViaTravelSafe":34,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":80},
+            {"flagCode":"ET","country":"埃塞俄比亚","GlobalPeaceIndex_2025":2.69,"SafestCountriesIndexViaTravelSafe":41,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"CD","country":"刚果民主共和国","GlobalPeaceIndex_2025":3.29,"SafestCountriesIndexViaTravelSafe":21,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"IR","country":"伊朗","GlobalPeaceIndex_2025":2.75,"SafestCountriesIndexViaTravelSafe":35,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":77},
+            {"flagCode":"SD","country":"苏丹","GlobalPeaceIndex_2025":3.32,"SafestCountriesIndexViaTravelSafe":55,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"IQ","country":"伊拉克","GlobalPeaceIndex_2025":2.86,"SafestCountriesIndexViaTravelSafe":14,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"AF","country":"阿富汗","GlobalPeaceIndex_2025":3.23,"SafestCountriesIndexViaTravelSafe":14,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"YE","country":"也门","GlobalPeaceIndex_2025":3.26,"SafestCountriesIndexViaTravelSafe":10,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"AO","country":"安哥拉","GlobalPeaceIndex_2025":1.99,"SafestCountriesIndexViaTravelSafe":48,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"UA","country":"乌克兰","GlobalPeaceIndex_2025":3.43,"SafestCountriesIndexViaTravelSafe":30,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":89},
+            {"flagCode":"MZ","country":"莫桑比克","GlobalPeaceIndex_2025":2.27,"SafestCountriesIndexViaTravelSafe":46,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"CM","country":"喀麦隆","GlobalPeaceIndex_2025":2.68,"SafestCountriesIndexViaTravelSafe":36,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":84},
+            {"flagCode":"VE","country":"委内瑞拉","GlobalPeaceIndex_2025":2.69,"SafestCountriesIndexViaTravelSafe":33,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"NE","country":"尼日尔","GlobalPeaceIndex_2025":2.76,"SafestCountriesIndexViaTravelSafe":37,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"KP","country":"北韩","GlobalPeaceIndex_2025":2.91,"SafestCountriesIndexViaTravelSafe":21,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"SY","country":"叙利亚","GlobalPeaceIndex_2025":3.18,"SafestCountriesIndexViaTravelSafe":10,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"ML","country":"马里","GlobalPeaceIndex_2025":3.06,"SafestCountriesIndexViaTravelSafe":31,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"TD","country":"乍得","GlobalPeaceIndex_2025":2.59,"SafestCountriesIndexViaTravelSafe":32,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"SO","country":"索马里","GlobalPeaceIndex_2025":2.98,"SafestCountriesIndexViaTravelSafe":16,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"SN","country":"塞内加尔","GlobalPeaceIndex_2025":1.94,"SafestCountriesIndexViaTravelSafe":45,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BI","country":"布隆迪","GlobalPeaceIndex_2025":2.57,"SafestCountriesIndexViaTravelSafe":30,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"SS","country":"南苏丹","GlobalPeaceIndex_2025":3.12,"SafestCountriesIndexViaTravelSafe":10,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"HT","country":"海地","GlobalPeaceIndex_2025":2.73,"SafestCountriesIndexViaTravelSafe":42,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"LY","country":"利比亚","GlobalPeaceIndex_2025":2.48,"SafestCountriesIndexViaTravelSafe":21,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"LB","country":"黎巴嫩","GlobalPeaceIndex_2025":2.67,"SafestCountriesIndexViaTravelSafe":35,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":87},
+            {"flagCode":"CF","country":"中非共和国","GlobalPeaceIndex_2025":2.91,"SafestCountriesIndexViaTravelSafe":32,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"MR","country":"毛里塔尼亚","GlobalPeaceIndex_2025":2.2,"SafestCountriesIndexViaTravelSafe":35,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"GA","country":"加蓬","GlobalPeaceIndex_2025":2.24,"SafestCountriesIndexViaTravelSafe":45,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"TT","country":"特立尼达和多巴哥","GlobalPeaceIndex_2025":2.02,"SafestCountriesIndexViaTravelSafe":43,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"TL","country":"东帝汶","GlobalPeaceIndex_2025":1.76,"SafestCountriesIndexViaTravelSafe":48,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":""},
+            
+            // 低风险国家
+            {"flagCode":"US","country":"美国","GlobalPeaceIndex_2025":2.44,"SafestCountriesIndexViaTravelSafe":68,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":47},
+            {"flagCode":"JP","country":"日本","GlobalPeaceIndex_2025":1.44,"SafestCountriesIndexViaTravelSafe":83,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":16},
+            {"flagCode":"VN","country":"越南","GlobalPeaceIndex_2025":1.72,"SafestCountriesIndexViaTravelSafe":73,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":55},
+            {"flagCode":"GB","country":"英国","GlobalPeaceIndex_2025":1.63,"SafestCountriesIndexViaTravelSafe":77,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":18},
+            {"flagCode":"KR","country":"韩国","GlobalPeaceIndex_2025":1.74,"SafestCountriesIndexViaTravelSafe":82,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":29},
+            {"flagCode":"AR","country":"阿根廷","GlobalPeaceIndex_2025":1.77,"SafestCountriesIndexViaTravelSafe":70,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":53},
+            {"flagCode":"CA","country":"加拿大","GlobalPeaceIndex_2025":1.49,"SafestCountriesIndexViaTravelSafe":88,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":6},
+            {"flagCode":"PL","country":"波兰","GlobalPeaceIndex_2025":1.71,"SafestCountriesIndexViaTravelSafe":84,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":22},
+            {"flagCode":"AU","country":"澳大利亚","GlobalPeaceIndex_2025":1.51,"SafestCountriesIndexViaTravelSafe":86,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":9},
+            {"flagCode":"KZ","country":"哈萨克斯坦斯坦","GlobalPeaceIndex_2025":1.88,"SafestCountriesIndexViaTravelSafe":72,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":65},
+            {"flagCode":"RO","country":"罗马尼亚","GlobalPeaceIndex_2025":1.72,"SafestCountriesIndexViaTravelSafe":80,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":40},
+            {"flagCode":"NL","country":"荷兰","GlobalPeaceIndex_2025":1.49,"SafestCountriesIndexViaTravelSafe":75,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":11},
+            {"flagCode":"EC","country":"厄瓜多尔","GlobalPeaceIndex_2025":2.46,"SafestCountriesIndexViaTravelSafe":55,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":79},
+            {"flagCode":"KH","country":"柬埔寨","GlobalPeaceIndex_2025":2.02,"SafestCountriesIndexViaTravelSafe":68,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":76},
+            {"flagCode":"RW","country":"卢旺达","GlobalPeaceIndex_2025":2.04,"SafestCountriesIndexViaTravelSafe":37,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BO","country":"玻利维亚","GlobalPeaceIndex_2025":2.01,"SafestCountriesIndexViaTravelSafe":57,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BE","country":"比利时","GlobalPeaceIndex_2025":1.49,"SafestCountriesIndexViaTravelSafe":70,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":10},
+            {"flagCode":"AE","country":"阿拉伯联合酋长国","GlobalPeaceIndex_2025":1.81,"SafestCountriesIndexViaTravelSafe":79,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":25},
+            {"flagCode":"SE","country":"瑞典","GlobalPeaceIndex_2025":1.71,"SafestCountriesIndexViaTravelSafe":83,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":3},
+            {"flagCode":"CZ","country":"捷克","GlobalPeaceIndex_2025":1.44,"SafestCountriesIndexViaTravelSafe":88,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":27},
+            {"flagCode":"PT","country":"葡萄牙","GlobalPeaceIndex_2025":1.37,"SafestCountriesIndexViaTravelSafe":57,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":15},
+            {"flagCode":"GR","country":"希腊","GlobalPeaceIndex_2025":1.76,"SafestCountriesIndexViaTravelSafe":73,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":20},
+            {"flagCode":"HU","country":"匈牙利","GlobalPeaceIndex_2025":1.5,"SafestCountriesIndexViaTravelSafe":83,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":26},
+            {"flagCode":"AT","country":"奥地利","GlobalPeaceIndex_2025":1.29,"SafestCountriesIndexViaTravelSafe":92,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":4},
+            {"flagCode":"BY","country":"白俄罗斯","GlobalPeaceIndex_2025":2.27,"SafestCountriesIndexViaTravelSafe":77,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":78},
+            {"flagCode":"CH","country":"瑞士","GlobalPeaceIndex_2025":1.29,"SafestCountriesIndexViaTravelSafe":89,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":1},
+            {"flagCode":"PY","country":"巴拉圭","GlobalPeaceIndex_2025":1.98,"SafestCountriesIndexViaTravelSafe":45,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BG","country":"保加利亚","GlobalPeaceIndex_2025":1.61,"SafestCountriesIndexViaTravelSafe":80,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":37},
+            {"flagCode":"DK","country":"丹麦","GlobalPeaceIndex_2025":1.39,"SafestCountriesIndexViaTravelSafe":94,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":5},
+            {"flagCode":"SG","country":"新加坡","GlobalPeaceIndex_2025":1.36,"SafestCountriesIndexViaTravelSafe":90,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":19},
+            {"flagCode":"FI","country":"芬兰","GlobalPeaceIndex_2025":1.42,"SafestCountriesIndexViaTravelSafe":86,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":7},
+            {"flagCode":"NO","country":"挪威","GlobalPeaceIndex_2025":1.64,"SafestCountriesIndexViaTravelSafe":85,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":2},
+            {"flagCode":"OM","country":"阿曼","GlobalPeaceIndex_2025":1.74,"SafestCountriesIndexViaTravelSafe":76,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":42},
+            {"flagCode":"SK","country":"斯洛伐克","GlobalPeaceIndex_2025":1.61,"SafestCountriesIndexViaTravelSafe":80,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":34},
+            {"flagCode":"IE","country":"爱尔兰","GlobalPeaceIndex_2025":1.26,"SafestCountriesIndexViaTravelSafe":83,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":12},
+            {"flagCode":"NZ","country":"新西兰","GlobalPeaceIndex_2025":1.28,"SafestCountriesIndexViaTravelSafe":90,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":8},
+            {"flagCode":"KW","country":"科威特","GlobalPeaceIndex_2025":1.64,"SafestCountriesIndexViaTravelSafe":66,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":41},
+            {"flagCode":"HR","country":"克罗地亚","GlobalPeaceIndex_2025":1.52,"SafestCountriesIndexViaTravelSafe":83,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":28},
+            {"flagCode":"GE","country":"格鲁吉亚","GlobalPeaceIndex_2025":2.19,"SafestCountriesIndexViaTravelSafe":63,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"MN","country":"蒙古","GlobalPeaceIndex_2025":1.72,"SafestCountriesIndexViaTravelSafe":71,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"UY","country":"乌拉圭","GlobalPeaceIndex_2025":1.78,"SafestCountriesIndexViaTravelSafe":77,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":56},
+            {"flagCode":"BA","country":"波斯尼亚和黑塞哥维那","GlobalPeaceIndex_2025":1.9,"SafestCountriesIndexViaTravelSafe":48,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"QA","country":"卡塔尔","GlobalPeaceIndex_2025":1.59,"SafestCountriesIndexViaTravelSafe":84,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":24},
+            {"flagCode":"AM","country":"亚美尼亚","GlobalPeaceIndex_2025":1.89,"SafestCountriesIndexViaTravelSafe":60,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"LT","country":"立陶宛","GlobalPeaceIndex_2025":1.56,"SafestCountriesIndexViaTravelSafe":79,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":33},
+            {"flagCode":"AL","country":"阿尔巴尼亚","GlobalPeaceIndex_2025":1.81,"SafestCountriesIndexViaTravelSafe":75,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BW","country":"博茨瓦纳","GlobalPeaceIndex_2025":1.74,"SafestCountriesIndexViaTravelSafe":77,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"SI","country":"斯洛文尼亚","GlobalPeaceIndex_2025":1.41,"SafestCountriesIndexViaTravelSafe":87,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":32},
+            {"flagCode":"LV","country":"拉脱维亚","GlobalPeaceIndex_2025":1.56,"SafestCountriesIndexViaTravelSafe":80,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":35},
+            {"flagCode":"MK","country":"北马其顿","GlobalPeaceIndex_2025":1.8,"SafestCountriesIndexViaTravelSafe":55,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BH","country":"巴林","GlobalPeaceIndex_2025":2.1,"SafestCountriesIndexViaTravelSafe":46,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":38},
+            {"flagCode":"CY","country":"塞浦路斯","GlobalPeaceIndex_2025":1.93,"SafestCountriesIndexViaTravelSafe":75,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":31},
+            {"flagCode":"EE","country":"爱沙尼亚","GlobalPeaceIndex_2025":1.56,"SafestCountriesIndexViaTravelSafe":82,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":36},
+            {"flagCode":"MU","country":"毛里求斯","GlobalPeaceIndex_2025":1.59,"SafestCountriesIndexViaTravelSafe":80,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"FJ","country":"斐济","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":70,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BT","country":"不丹","GlobalPeaceIndex_2025":1.54,"SafestCountriesIndexViaTravelSafe":70,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"LU","country":"卢森堡","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":74,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":14},
+            {"flagCode":"ME","country":"黑山","GlobalPeaceIndex_2025":1.69,"SafestCountriesIndexViaTravelSafe":70,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"MT","country":"马耳他","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":78,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"MV","country":"马尔代夫","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":46,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BN","country":"文莱","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":80,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BS","country":"巴哈马","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":49,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"IS","country":"冰岛","GlobalPeaceIndex_2025":1.1,"SafestCountriesIndexViaTravelSafe":95,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":13},
+            
+            // 中风险国家
+            {"flagCode":"IN","country":"印度","GlobalPeaceIndex_2025":2.23,"SafestCountriesIndexViaTravelSafe":47,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":82},
+            {"flagCode":"CN","country":"中国","GlobalPeaceIndex_2025":2.09,"SafestCountriesIndexViaTravelSafe":66,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":54},
+            {"flagCode":"ID","country":"印度尼西亚","GlobalPeaceIndex_2025":1.79,"SafestCountriesIndexViaTravelSafe":58,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":51},
+            {"flagCode":"NG","country":"尼日利亚","GlobalPeaceIndex_2025":2.87,"SafestCountriesIndexViaTravelSafe":33,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BR","country":"巴西","GlobalPeaceIndex_2025":2.47,"SafestCountriesIndexViaTravelSafe":52,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":85},
+            {"flagCode":"BD","country":"孟加拉国","GlobalPeaceIndex_2025":2.32,"SafestCountriesIndexViaTravelSafe":49,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":75},
+            {"flagCode":"MX","country":"墨西哥","GlobalPeaceIndex_2025":2.64,"SafestCountriesIndexViaTravelSafe":65,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":81},
+            {"flagCode":"EG","country":"埃及","GlobalPeaceIndex_2025":2.16,"SafestCountriesIndexViaTravelSafe":38,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":52},
+            {"flagCode":"PH","country":"菲律宾","GlobalPeaceIndex_2025":2.15,"SafestCountriesIndexViaTravelSafe":47,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":62},
+            {"flagCode":"TR","country":"土耳其","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":45,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":43},
+            {"flagCode":"DE","country":"德国","GlobalPeaceIndex_2025":1.53,"SafestCountriesIndexViaTravelSafe":85,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":17},
+            {"flagCode":"TH","country":"泰国","GlobalPeaceIndex_2025":2.02,"SafestCountriesIndexViaTravelSafe":48,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":46},
+            {"flagCode":"FR","country":"法国","GlobalPeaceIndex_2025":1.97,"SafestCountriesIndexViaTravelSafe":64,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":30},
+            {"flagCode":"ZA","country":"南非","GlobalPeaceIndex_2025":2.35,"SafestCountriesIndexViaTravelSafe":48,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":83},
+            {"flagCode":"IT","country":"意大利","GlobalPeaceIndex_2025":1.66,"SafestCountriesIndexViaTravelSafe":77,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":23},
+            {"flagCode":"KE","country":"肯尼亚","GlobalPeaceIndex_2025":2.39,"SafestCountriesIndexViaTravelSafe":45,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":72},
+            {"flagCode":"MM","country":"缅甸","GlobalPeaceIndex_2025":3.05,"SafestCountriesIndexViaTravelSafe":39,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":68},
+            {"flagCode":"CO","country":"哥伦比亚","GlobalPeaceIndex_2025":2.7,"SafestCountriesIndexViaTravelSafe":42,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":86},
+            {"flagCode":"UG","country":"乌干达","GlobalPeaceIndex_2025":2.22,"SafestCountriesIndexViaTravelSafe":49,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"ES","country":"西班牙","GlobalPeaceIndex_2025":1.58,"SafestCountriesIndexViaTravelSafe":83,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":21},
+            {"flagCode":"DZ","country":"阿尔及利亚","GlobalPeaceIndex_2025":2.04,"SafestCountriesIndexViaTravelSafe":44,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":64},
+            {"flagCode":"MA","country":"摩洛哥","GlobalPeaceIndex_2025":2.01,"SafestCountriesIndexViaTravelSafe":54,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":45},
+            {"flagCode":"UZ","country":"乌兹别克斯坦","GlobalPeaceIndex_2025":1.93,"SafestCountriesIndexViaTravelSafe":40,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":71},
+            {"flagCode":"MY","country":"马来西亚","GlobalPeaceIndex_2025":1.47,"SafestCountriesIndexViaTravelSafe":69,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":44},
+            {"flagCode":"GH","country":"加纳","GlobalPeaceIndex_2025":1.9,"SafestCountriesIndexViaTravelSafe":73,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":70},
+            {"flagCode":"PE","country":"秘鲁","GlobalPeaceIndex_2025":2.07,"SafestCountriesIndexViaTravelSafe":50,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":50},
+            {"flagCode":"SA","country":"沙特阿拉伯","GlobalPeaceIndex_2025":2.04,"SafestCountriesIndexViaTravelSafe":46,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":39},
+            {"flagCode":"MG","country":"马达加斯加","GlobalPeaceIndex_2025":1.9,"SafestCountriesIndexViaTravelSafe":49,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"CI","country":"科特迪瓦","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":37,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"NP","country":"尼泊尔","GlobalPeaceIndex_2025":1.99,"SafestCountriesIndexViaTravelSafe":59,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BF","country":"布基纳法索","GlobalPeaceIndex_2025":3.02,"SafestCountriesIndexViaTravelSafe":41,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"LK","country":"斯里兰卡","GlobalPeaceIndex_2025":2.08,"SafestCountriesIndexViaTravelSafe":60,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":73},
+            {"flagCode":"ZM","country":"赞比亚","GlobalPeaceIndex_2025":1.91,"SafestCountriesIndexViaTravelSafe":52,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"CL","country":"智利","GlobalPeaceIndex_2025":1.9,"SafestCountriesIndexViaTravelSafe":79,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":57},
+            {"flagCode":"GT","country":"危地马拉","GlobalPeaceIndex_2025":2.17,"SafestCountriesIndexViaTravelSafe":54,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":74},
+            {"flagCode":"ZW","country":"津巴布韦","GlobalPeaceIndex_2025":2.22,"SafestCountriesIndexViaTravelSafe":53,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":69},
+            {"flagCode":"GN","country":"几内亚","GlobalPeaceIndex_2025":2.25,"SafestCountriesIndexViaTravelSafe":39,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BJ","country":"贝宁","GlobalPeaceIndex_2025":2.21,"SafestCountriesIndexViaTravelSafe":45,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"TN","country":"突尼斯","GlobalPeaceIndex_2025":2,"SafestCountriesIndexViaTravelSafe":53,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":58},
+            {"flagCode":"JO","country":"约旦","GlobalPeaceIndex_2025":1.96,"SafestCountriesIndexViaTravelSafe":53,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":49},
+            {"flagCode":"DO","country":"多米尼加","GlobalPeaceIndex_2025":2,"SafestCountriesIndexViaTravelSafe":54,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":60},
+            {"flagCode":"HN","country":"洪都拉斯","GlobalPeaceIndex_2025":2.35,"SafestCountriesIndexViaTravelSafe":49,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":63},
+            {"flagCode":"CU","country":"古巴","GlobalPeaceIndex_2025":2.12,"SafestCountriesIndexViaTravelSafe":47,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"TJ","country":"塔吉克斯坦","GlobalPeaceIndex_2025":2,"SafestCountriesIndexViaTravelSafe":38,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"PG","country":"巴布亚新几内亚","GlobalPeaceIndex_2025":2.23,"SafestCountriesIndexViaTravelSafe":47,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"AZ","country":"阿塞拜疆","GlobalPeaceIndex_2025":2.07,"SafestCountriesIndexViaTravelSafe":51,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":59},
+            {"flagCode":"TG","country":"多哥","GlobalPeaceIndex_2025":2.38,"SafestCountriesIndexViaTravelSafe":69,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"IL","country":"以色列","GlobalPeaceIndex_2025":3.11,"SafestCountriesIndexViaTravelSafe":60,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":88},
+            {"flagCode":"SL","country":"塞拉利昂","GlobalPeaceIndex_2025":1.89,"SafestCountriesIndexViaTravelSafe":50,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"LA","country":"老挝","GlobalPeaceIndex_2025":1.78,"SafestCountriesIndexViaTravelSafe":51,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"TM","country":"土库曼斯坦","GlobalPeaceIndex_2025":2.02,"SafestCountriesIndexViaTravelSafe":42,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"KG","country":"吉尔吉斯斯坦","GlobalPeaceIndex_2025":1.99,"SafestCountriesIndexViaTravelSafe":38,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"NI","country":"尼加拉瓜","GlobalPeaceIndex_2025":2.21,"SafestCountriesIndexViaTravelSafe":46,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"RS","country":"塞尔维亚","GlobalPeaceIndex_2025":1.91,"SafestCountriesIndexViaTravelSafe":77,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":66},
+            {"flagCode":"CG","country":"刚果共和国","GlobalPeaceIndex_2025":2.13,"SafestCountriesIndexViaTravelSafe":54,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"SV","country":"萨尔瓦多","GlobalPeaceIndex_2025":2.14,"SafestCountriesIndexViaTravelSafe":50,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":67},
+            {"flagCode":"LR","country":"利比里亚","GlobalPeaceIndex_2025":1.94,"SafestCountriesIndexViaTravelSafe":45,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"CR","country":"哥斯达黎加","GlobalPeaceIndex_2025":1.84,"SafestCountriesIndexViaTravelSafe":64,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":48},
+            {"flagCode":"PA","country":"巴拿马","GlobalPeaceIndex_2025":2.01,"SafestCountriesIndexViaTravelSafe":65,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":61},
+            {"flagCode":"ER","country":"厄立特里亚","GlobalPeaceIndex_2025":2.54,"SafestCountriesIndexViaTravelSafe":32,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"PR","country":"波多黎各","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":34,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"NA","country":"纳米比亚","GlobalPeaceIndex_2025":1.79,"SafestCountriesIndexViaTravelSafe":71,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"MD","country":"摩尔多瓦","GlobalPeaceIndex_2025":1.92,"SafestCountriesIndexViaTravelSafe":67,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"JM","country":"牙买加","GlobalPeaceIndex_2025":2.05,"SafestCountriesIndexViaTravelSafe":55,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"GM","country":"冈比亚","GlobalPeaceIndex_2025":1.86,"SafestCountriesIndexViaTravelSafe":69,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"LS","country":"莱索托","GlobalPeaceIndex_2025":2.27,"SafestCountriesIndexViaTravelSafe":47,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"GW","country":"几内亚比绍","GlobalPeaceIndex_2025":2.11,"SafestCountriesIndexViaTravelSafe":36,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"GQ","country":"赤道几内亚","GlobalPeaceIndex_2025":2,"SafestCountriesIndexViaTravelSafe":68,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"SZ","country":"斯威士兰","GlobalPeaceIndex_2025":2.09,"SafestCountriesIndexViaTravelSafe":47,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"DJ","country":"吉布提","GlobalPeaceIndex_2025":2.28,"SafestCountriesIndexViaTravelSafe":38,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"GY","country":"圭亚那","GlobalPeaceIndex_2025":2.15,"SafestCountriesIndexViaTravelSafe":43,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"SR","country":"苏里南","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":62,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"BZ","country":"伯利兹","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":43,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""},
+            {"flagCode":"KY","country":"开曼群岛","GlobalPeaceIndex_2025":"","SafestCountriesIndexViaTravelSafe":50,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":""}
+        ];
+
+        // ==================== 语言映射表 ====================
+        const translationMap = {
+            // 繁体页面 (zh-hant) 为基准
+            "index.html": {
+                "zh-hans": "index_zh-hans.html",
+                "pt": "index_pt.html"
+            },
+            "emergency_zh-hant.html": {
+                "zh-hans": "emergency_zh-hans.html",
+                "pt": "emergency_pt.html"
+            },
+            "upcoming-trip_zh-hant.html": {
+                "zh-hans": "upcoming-trip_zh-hans.html",
+                "pt": "upcoming-trip_pt.html"
+            },
+            "overseas-difficulty_zh-hant.html": {
+                "zh-hans": "overseas-difficulty_zh-hans.html",
+                "pt": "overseas-difficulty_pt.html"
+            },
+            "risk-map_zh-hant.html": {
+                "zh-hans": "risk-map_zh-hans.html",
+                "pt": "risk-map_pt.html"
+            },
+            "podcast_zh-hant.html": {
+                "zh-hans": "podcast_zh-hans.html",
+                "pt": "podcast_pt.html"
+            },
+            "short-videos_zh-hant.html": {
+                "zh-hans": "short-videos_zh-hans.html",
+                "pt": "short-videos_pt.html"
+            },
+            "resources_zh-hant.html": {
+                "zh-hans": "resources_zh-hans.html",
+                "pt": "resources_pt.html"
+            },
+            "consular-protection_zh-hant.html": {
+                "zh-hans": "consular-protection_zh-hans.html",
+                "pt": "consular-protection_pt.html"
+            },
+            "rights_zh-hant.html": {
+                "zh-hans": "rights_zh-hans.html",
+                "pt": "rights_pt.html"
+            },
+            "schedule_zh-hant.html": {
+                "zh-hans": "schedule_zh-hans.html",
+                "pt": "schedule_pt.html"
+            },
+            "weekly-challenge_zh-hant.html": {
+                "zh-hans": "weekly-challenge_zh-hans.html",
+                "pt": "weekly-challenge_pt.html"
+            },
+            "safety-quiz_zh-hant.html": {
+                "zh-hans": "safety-quiz_zh-hans.html",
+                "pt": "safety-quiz_pt.html"
+            },
+            
+            // 简体页面 (zh-hans) 为基准
+            "index_zh-hans.html": {
+                "zh-hant": "index.html",
+                "pt": "index_pt.html"
+            },
+            "emergency_zh-hans.html": {
+                "zh-hant": "emergency_zh-hant.html",
+                "pt": "emergency_pt.html"
+            },
+            "upcoming-trip_zh-hans.html": {
+                "zh-hant": "upcoming-trip_zh-hant.html",
+                "pt": "upcoming-trip_pt.html"
+            },
+            "overseas-difficulty_zh-hans.html": {
+                "zh-hant": "overseas-difficulty_zh-hant.html",
+                "pt": "overseas-difficulty_pt.html"
+            },
+            "risk-map_zh-hans.html": {
+                "zh-hant": "risk-map_zh-hant.html",
+                "pt": "risk-map_pt.html"
+            },
+            "podcast_zh-hans.html": {
+                "zh-hant": "podcast_zh-hant.html",
+                "pt": "podcast_pt.html"
+            },
+            "short-videos_zh-hans.html": {
+                "zh-hant": "short-videos_zh-hant.html",
+                "pt": "short-videos_pt.html"
+            },
+            "resources_zh-hans.html": {
+                "zh-hant": "resources_zh-hant.html",
+                "pt": "resources_pt.html"
+            },
+            "consular-protection_zh-hans.html": {
+                "zh-hant": "consular-protection_zh-hant.html",
+                "pt": "consular-protection_pt.html"
+            },
+            "rights_zh-hans.html": {
+                "zh-hant": "rights_zh-hant.html",
+                "pt": "rights_pt.html"
+            },
+            "schedule_zh-hans.html": {
+                "zh-hant": "schedule_zh-hant.html",
+                "pt": "schedule_pt.html"
+            },
+            "weekly-challenge_zh-hans.html": {
+                "zh-hant": "weekly-challenge_zh-hant.html",
+                "pt": "weekly-challenge_pt.html"
+            },
+            "safety-quiz_zh-hans.html": {
+                "zh-hant": "safety-quiz_zh-hant.html",
+                "pt": "safety-quiz_pt.html"
+            },
+            
+            // 葡文页面 (pt) 为基准
+            "index_pt.html": {
+                "zh-hant": "index.html",
+                "zh-hans": "index_zh-hans.html"
+            },
+            "emergency_pt.html": {
+                "zh-hant": "emergency_zh-hant.html",
+                "zh-hans": "emergency_zh-hans.html"
+            },
+            "upcoming-trip_pt.html": {
+                "zh-hant": "upcoming-trip_zh-hant.html",
+                "zh-hans": "upcoming-trip_zh-hans.html"
+            },
+            "overseas-difficulty_pt.html": {
+                "zh-hant": "overseas-difficulty_zh-hant.html",
+                "zh-hans": "overseas-difficulty_zh-hans.html"
+            },
+            "risk-map_pt.html": {
+                "zh-hant": "risk-map_zh-hant.html",
+                "zh-hans": "risk-map_zh-hans.html"
+            },
+            "podcast_pt.html": {
+                "zh-hant": "podcast_zh-hant.html",
+                "zh-hans": "podcast_zh-hans.html"
+            },
+            "short-videos_pt.html": {
+                "zh-hant": "short-videos_zh-hant.html",
+                "zh-hans": "short-videos_zh-hans.html"
+            },
+            "resources_pt.html": {
+                "zh-hant": "resources_zh-hant.html",
+                "zh-hans": "resources_zh-hans.html"
+            },
+            "consular-protection_pt.html": {
+                "zh-hant": "consular-protection_zh-hant.html",
+                "zh-hans": "consular-protection_zh-hans.html"
+            },
+            "rights_pt.html": {
+                "zh-hant": "rights_zh-hant.html",
+                "zh-hans": "rights_zh-hans.html"
+            },
+            "schedule_pt.html": {
+                "zh-hant": "schedule_zh-hant.html",
+                "zh-hans": "schedule_zh-hans.html"
+            },
+            "weekly-challenge_pt.html": {
+                "zh-hant": "weekly-challenge_zh-hant.html",
+                "zh-hans": "weekly-challenge_zh-hans.html"
+            },
+            "safety-quiz_pt.html": {
+                "zh-hant": "safety-quiz_zh-hant.html",
+                "zh-hans": "safety-quiz_zh-hans.html"
+            }
+        };
+
+        // ==================== 语言切换函数 ====================
+        /**
+         * 根据当前页面和目标语言代码进行导航
+         * @param {string} targetLang - 目标语言代码 ('zh-hant', 'zh-hans', 'pt')
+         */
+        function switchLanguage(targetLang) {
+            // 获取当前激活的语言按钮
+            const activeButton = document.querySelector('.lang-btn.active');
+            
+            // 如果点击的按钮已经是激活状态，则直接返回，不执行任何操作
+            if (activeButton && activeButton.getAttribute('data-lang') === targetLang) {
+                console.log(`当前已是${targetLang}语言，无需切换`);
+                return;
+            }
+            
+            // 1. 获取当前页面的文件名
+            const currentPath = window.location.pathname;
+            const currentFileName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+            
+            console.log(`当前文件: ${currentFileName}, 目标语言: ${targetLang}`);
+            
+            // 2. 在映射表中查找目标链接
+            const currentLangLinks = translationMap[currentFileName];
+            
+            if (currentLangLinks && currentLangLinks[targetLang]) {
+                // 3. 构造完整的目标 URL
+                const targetFileName = currentLangLinks[targetLang];
+                
+                // 获取当前目录路径
+                let basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                if (basePath === '/') basePath = ''; // 如果是在根目录
+                
+                const newUrl = basePath + targetFileName;
+                
+                console.log(`导航到: ${newUrl}`);
+                
+                // 4. 导航到目标页面
+                window.location.href = newUrl;
+            } else {
+                // 如果找不到对应链接
+                console.error(`找不到 ${currentFileName} 对应的 ${targetLang} 语言链接。`);
+                alert('抱歉，该页面的此语言版本暂时不可用。');
+            }
+        }
+
+        // 文档加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.getElementById('header');
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sideMenu = document.getElementById('side-menu');
+            const menuOverlay = document.getElementById('menu-overlay');
+            const contentSection = document.getElementById('content-section');
+            const langButtons = document.querySelectorAll('.lang-btn');
+            const footer = document.getElementById('footer');
+            const sortButtons = document.querySelectorAll('.sort-btn');
+            const countrySearch = document.getElementById('country-search');
+            const riskTableBody = document.getElementById('risk-table-body');
+            const tooltip = document.getElementById('tooltip');
+            const countryInfoPanel = document.getElementById('country-info-panel');
+            const closeInfoBtn = document.getElementById('close-info-btn');
+            const toggleTableBtn = document.getElementById('toggle-table-btn');
+            const dataTableContainer = document.getElementById('data-table-container');
+            const staticMap = document.getElementById('static-map');
+            const mapPlaceholder = document.getElementById('map-placeholder');
+            
+            // 国家信息面板元素
+            const countryNameEnElement = document.getElementById('country-name-en');
+            const countryNameZhElement = document.getElementById('country-name-zh');
+            const riskLevelElement = document.getElementById('risk-level');
+            const gpiIndexElement = document.getElementById('gpi-index');
+            const travelSafeIndexElement = document.getElementById('travel-safe-index');
+            const countryNameTitle = document.getElementById('country-name');
+            
+            let lastScrollTop = 0;
+            let isMenuOpen = false;
+            
+            // 滚动监听变量
+            let isFooterVisible = false;
+            
+            // 风险数据索引
+            let riskDataMap = {};
+            let currentSort = { field: 'country', order: 'asc' };
+            let displayedData = [...riskData];
+            
+            // 表格折迭状态
+            let isTableExpanded = false;
+            
+            // 当前选中的表格行
+            let selectedRow = null;
+            
+            // 汉堡菜单切换功能
+            function toggleMenu() {
+                isMenuOpen = !isMenuOpen;
+                sideMenu.classList.toggle('active', isMenuOpen);
+                menuOverlay.classList.toggle('active', isMenuOpen);
+                menuToggle.setAttribute('aria-expanded', isMenuOpen);
+                document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+            }
+
+            menuToggle.addEventListener('click', toggleMenu);
+            menuOverlay.addEventListener('click', toggleMenu);
+
+            // 关闭菜单当点击菜单内的链接
+            sideMenu.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    toggleMenu();
+                }
+            });
+
+            // ==================== 语言按钮高亮逻辑 ====================
+            /**
+             * 根据当前页面自动高亮对应的语言按钮
+             */
+            function highlightCurrentLanguage() {
+                // 获取当前页面的文件名
+                const currentPath = window.location.pathname;
+                const currentFileName = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+                
+                console.log(`当前文件名: ${currentFileName}`);
+                
+                // 移除所有按钮的active类
+                langButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // 根据文件名判断当前语言
+                let currentLang = '';
+                
+                if (currentFileName.includes('_zh-hant.html') || currentFileName === 'index.html') {
+                    currentLang = 'zh-hant';
+                } else if (currentFileName.includes('_zh-hans.html')) {
+                    currentLang = 'zh-hans';
+                } else if (currentFileName.includes('_pt.html')) {
+                    currentLang = 'pt';
+                } else {
+                    // 默认情况下，假设是繁体中文
+                    currentLang = 'zh-hant';
+                }
+                
+                // 找到对应语言按钮并添加active类
+                const activeButton = document.querySelector(`.lang-btn[data-lang="${currentLang}"]`);
+                if (activeButton) {
+                    activeButton.classList.add('active');
+                    console.log(`高亮语言按钮: ${currentLang}`);
+                } else {
+                    console.warn(`找不到对应语言按钮: ${currentLang}`);
+                }
+            }
+            
+            // 页面加载时立即调用高亮函数
+            highlightCurrentLanguage();
+
+            // 滚动时隐藏/显示导航栏和显示动画
+            window.addEventListener('scroll', function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // 隐藏/显示导航栏
+                if (!isMenuOpen) {
+                    if (scrollTop > lastScrollTop && scrollTop > 100) {
+                        header.classList.add('hidden');
+                    } else {
+                        header.classList.remove('hidden');
+                    }
+                }
+                
+                // 检查页脚是否进入视图
+                if (!isFooterVisible && scrollTop > window.innerHeight * 0.7) {
+                    footer.classList.add('visible');
+                    isFooterVisible = true;
+                }
+                
+                lastScrollTop = scrollTop;
+            });
+            
+            // ==================== 风险数据处理 ====================
+            /**
+             * 初始化风险数据索引
+             */
+            function initRiskData() {
+                riskData.forEach(country => {
+                    riskDataMap[country.flagCode] = country;
+                });
+                console.log(`已加载 ${Object.keys(riskDataMap).length} 个国家的风险数据`);
+            }
+            
+            /**
+             * 根据风险等级获取徽章类名
+             * @param {string} riskLevel - 风险等级
+             * @returns {string} 徽章类名
+             */
+            function getRiskBadgeClass(riskLevel) {
+                switch(riskLevel) {
+                    case 'High':
+                        return 'risk-high-badge';
+                    case 'Medium':
+                        return 'risk-medium-badge';
+                    case 'Low':
+                        return 'risk-low-badge';
+                    default:
+                        return '';
+                }
+            }
+            
+            /**
+             * 显示国家信息面板
+             * @param {Object} countryData - 国家数据
+             * @param {string} countryCode - 国家代码
+             */
+            function showCountryInfo(countryData, countryCode) {
+                // 获取国家英文名
+                const countryNameEn = getCountryEnglishName(countryCode) || countryCode;
+                
+                // 更新面板内容
+                countryNameEnElement.textContent = countryNameEn;
+                countryNameZhElement.textContent = countryData.country;
+                riskLevelElement.textContent = countryData.RiskLevelByCountryViaTravelSafe || '无数据';
+                gpiIndexElement.textContent = countryData.GlobalPeaceIndex_2025 || '无数据';
+                travelSafeIndexElement.textContent = countryData.SafestCountriesIndexViaTravelSafe || '无数据';
+                countryNameTitle.textContent = countryData.country;
+                
+                // 设置风险等级颜色
+                riskLevelElement.className = 'info-value';
+                if (countryData.RiskLevelByCountryViaTravelSafe === 'High') {
+                    riskLevelElement.classList.add('high');
+                } else if (countryData.RiskLevelByCountryViaTravelSafe === 'Medium') {
+                    riskLevelElement.classList.add('medium');
+                } else if (countryData.RiskLevelByCountryViaTravelSafe === 'Low') {
+                    riskLevelElement.classList.add('low');
+                }
+                
+                // 显示面板
+                countryInfoPanel.classList.add('visible');
+            }
+            
+            /**
+             * 根据国家代码获取英文名
+             * @param {string} countryCode - 国家代码
+             * @returns {string} 英文名
+             */
+            function getCountryEnglishName(countryCode) {
+                // 这里可以扩展为完整的国家代码到英文名的映像
+                const countryNames = {
+                    'CN': 'China',
+                    'US': 'United States',
+                    'JP': 'Japan',
+                    'GB': 'United Kingdom',
+                    'KR': 'South Korea',
+                    'DE': 'Germany',
+                    'FR': 'France',
+                    'IT': 'Italy',
+                    'RU': 'Russia',
+                    'CA': 'Canada',
+                    'AU': 'Australia',
+                    'BR': 'Brazil',
+                    'IN': 'India',
+                    'MX': 'Mexico',
+                    'ES': 'Spain',
+                    'PT': 'Portugal',
+                    'HK': 'Hong Kong',
+                    'MO': 'Macau',
+                    'TW': 'Taiwan (Part of China)',
+                    // 可以添加更多国家映射
+                };
+                
+                return countryNames[countryCode] || '';
+            }
+            
+            /**
+             * 隐藏国家信息面板
+             */
+            function hideCountryInfo() {
+                countryInfoPanel.classList.remove('visible');
+            }
+            
+            /**
+             * 更新数据表格
+             */
+            function updateRiskTable() {
+                // 清空表格
+                riskTableBody.innerHTML = '';
+                
+                // 过滤掉台湾的数据（台湾数据不单独显示在表格中）
+                const filteredData = displayedData.filter(country => 
+                    country.flagCode !== "TW"
+                );
+                
+                // 填充表格数据
+                filteredData.forEach((country, index) => {
+                    const row = document.createElement('tr');
+                    row.dataset.index = index;
+                    row.dataset.countryCode = country.flagCode;
+                    
+                    // 国家列
+                    const countryCell = document.createElement('td');
+                    countryCell.textContent = country.country;
+                    row.appendChild(countryCell);
+                    
+                    // 风险等级列
+                    const riskCell = document.createElement('td');
+                    const riskBadge = document.createElement('span');
+                    riskBadge.className = `risk-badge ${getRiskBadgeClass(country.RiskLevelByCountryViaTravelSafe)}`;
+                    riskBadge.textContent = country.RiskLevelByCountryViaTravelSafe || '无数据';
+                    riskCell.appendChild(riskBadge);
+                    row.appendChild(riskCell);
+                    
+                    // 全球和平指数列
+                    const gpiCell = document.createElement('td');
+                    gpiCell.textContent = country.GlobalPeaceIndex_2025 || '无数据';
+                    row.appendChild(gpiCell);
+                    
+                    // 旅行安全指数列
+                    const travelSafeCell = document.createElement('td');
+                    travelSafeCell.textContent = country.SafestCountriesIndexViaTravelSafe || '无数据';
+                    row.appendChild(travelSafeCell);
+                    
+                    // 最安全国家排名列
+                    const safestRankCell = document.createElement('td');
+                    safestRankCell.textContent = country.SafestCountriesRankUSNews_2024 || '无数据';
+                    row.appendChild(safestRankCell);
+                    
+                    // 添加点击事件
+                    row.addEventListener('click', function() {
+                        // 移除之前选中的行的样式
+                        if (selectedRow) {
+                            selectedRow.classList.remove('selected');
+                        }
+                        
+                        // 添加当前选中行的样式
+                        this.classList.add('selected');
+                        selectedRow = this;
+                        
+                        // 显示国家信息
+                        const countryCode = this.dataset.countryCode;
+                        const countryData = riskDataMap[countryCode];
+                        
+                        if (countryData) {
+                            showCountryInfo(countryData, countryCode);
+                            
+                            // 在搜寻框中显示国家名称
+                            countrySearch.value = countryData.country;
+                        }
+                    });
+                    
+                    // 添加悬停事件显示工具提示
+                    row.addEventListener('mouseover', function(e) {
+                        const countryCode = this.dataset.countryCode;
+                        const countryData = riskDataMap[countryCode];
+                        
+                        if (countryData) {
+                            const tooltipHtml = `
+                                <strong>${countryData.country}</strong><br/>
+                                风险等级: ${countryData.RiskLevelByCountryViaTravelSafe || '无数据'}<br/>
+                                全球和平指数: ${countryData.GlobalPeaceIndex_2025 || '无数据'}<br/>
+                                旅行安全指数: ${countryData.SafestCountriesIndexViaTravelSafe || '无数据'}
+                            `;
+                            
+                            tooltip.innerHTML = tooltipHtml;
+                            tooltip.style.display = 'block';
+                            tooltip.style.left = (e.pageX + 10) + 'px';
+                            tooltip.style.top = (e.pageY - 10) + 'px';
+                        }
+                    });
+                    
+                    row.addEventListener('mouseout', function() {
+                        tooltip.style.display = 'none';
+                    });
+                    
+                    riskTableBody.appendChild(row);
+                });
+            }
+            
+            /**
+             * 排序数据
+             * @param {string} field - 排序字段
+             * @param {string} order - 排序顺序 ('asc' 或 'desc')
+             */
+            function sortData(field, order) {
+                currentSort = { field, order };
+                
+                // 确定实际的数据字段
+                let dataField = field;
+                if (field === 'risk') dataField = 'RiskLevelByCountryViaTravelSafe';
+                if (field === 'gpi') dataField = 'GlobalPeaceIndex_2025';
+                if (field === 'travel') dataField = 'SafestCountriesIndexViaTravelSafe';
+                
+                displayedData.sort((a, b) => {
+                    let aValue = a[dataField];
+                    let bValue = b[dataField];
+                    
+                    // 处理空值
+                    if (aValue === '' || aValue === undefined) aValue = order === 'asc' ? Infinity : -Infinity;
+                    if (bValue === '' || bValue === undefined) bValue = order === 'asc' ? Infinity : -Infinity;
+                    
+                    // 特殊处理风险等级排序
+                    if (dataField === 'RiskLevelByCountryViaTravelSafe') {
+                        const riskOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+                        aValue = riskOrder[aValue] || 0;
+                        bValue = riskOrder[bValue] || 0;
+                    }
+                    
+                    // 数值比较
+                    if (dataField === 'GlobalPeaceIndex_2025' || dataField === 'SafestCountriesIndexViaTravelSafe' || dataField === 'SafestCountriesRankUSNews_2024') {
+                        aValue = parseFloat(aValue);
+                        bValue = parseFloat(bValue);
+                        
+                        if (order === 'asc') {
+                            return aValue - bValue;
+                        } else {
+                            return bValue - aValue;
+                        }
+                    }
+                    
+                    // 字符串比较
+                    if (order === 'asc') {
+                        return String(aValue).localeCompare(String(bValue), 'zh-Hant');
+                    } else {
+                        return String(bValue).localeCompare(String(aValue), 'zh-Hant');
+                    }
+                });
+                
+                updateRiskTable();
+            }
+            
+            /**
+             * 搜寻国家
+             * @param {string} searchTerm - 搜寻关键词
+             */
+            function searchCountries(searchTerm) {
+                if (!searchTerm.trim()) {
+                    // 如果搜寻框为空，恢复显示所有数据
+                    displayedData = [...riskData];
+                    // 应用当前排序
+                    sortData(currentSort.field, currentSort.order);
+                    return;
+                }
+                
+                const searchLower = searchTerm.toLowerCase();
+                displayedData = riskData.filter(country => 
+                    country.country.toLowerCase().includes(searchLower) ||
+                    getCountryEnglishName(country.flagCode).toLowerCase().includes(searchLower)
+                );
+                
+                // 应用当前排序
+                sortData(currentSort.field, currentSort.order);
+                
+                // 更新表格
+                updateRiskTable();
+                
+                // 隐藏国家信息面板（因为搜寻后选中的国家可能不在搜寻结果中）
+                hideCountryInfo();
+                
+                // 清除选中的行
+                if (selectedRow) {
+                    selectedRow.classList.remove('selected');
+                    selectedRow = null;
+                }
+            }
+            
+            /**
+             * 检查图片是否成功加载
+             */
+            function checkImageLoad() {
+                // 如果图片加载失败，显示备用讯息
+                staticMap.onerror = function() {
+                    console.error("地图图片加载失败");
+                    staticMap.style.display = 'none';
+                    mapPlaceholder.style.display = 'flex';
+                };
+                
+                // 如果图片加载成功，隐藏备用讯息
+                staticMap.onload = function() {
+                    console.log("地图图片加载成功");
+                    mapPlaceholder.style.display = 'none';
+                };
+            }
+            
+            /**
+             * 切换表格显示状态
+             */
+            function toggleTable() {
+                isTableExpanded = !isTableExpanded;
+                
+                if (isTableExpanded) {
+                    dataTableContainer.classList.add('expanded');
+                    toggleTableBtn.innerHTML = '<span class="icon">▼</span><span>隐藏详细数据表</span>';
+                    toggleTableBtn.classList.add('collapsed');
+                } else {
+                    dataTableContainer.classList.remove('expanded');
+                    toggleTableBtn.innerHTML = '<span class="icon">▼</span><span>显示详细数据表</span>';
+                    toggleTableBtn.classList.remove('collapsed');
+                }
+            }
+            
+            // 显示界面元素
+            function showInterfaceElements() {
+                // 延迟后显示标题栏（从上往下进入）
+                setTimeout(() => {
+                    header.classList.add('visible');
+                }, 300);
+                
+                // 初始化风险数据
+                initRiskData();
+                
+                // 检查图片加载
+                checkImageLoad();
+                
+                // 初始化数据表格
+                updateRiskTable();
+                
+                // 显示内容区域和页脚
+                setTimeout(() => {
+                    contentSection.classList.add('visible');
+                }, 800);
+                
+                // 显示页脚（从下往上淡入）
+                setTimeout(() => {
+                    footer.classList.add('visible');
+                }, 1000);
+            }
+            
+            // ==================== 事件监听器 ====================
+            // 排序按钮点击事件
+            sortButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有排序按钮的active类
+                    sortButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // 为当前按钮添加active类
+                    this.classList.add('active');
+                    
+                    // 获取排序字段和顺序
+                    const sortField = this.getAttribute('data-sort');
+                    const sortOrder = this.getAttribute('data-order');
+                    
+                    // 切换排序顺序
+                    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+                    this.setAttribute('data-order', newOrder);
+                    
+                    // 更新按钮文本
+                    if (sortField === 'risk') {
+                        this.textContent = newOrder === 'asc' ? '风险等级 ↑' : '风险等级 ↓';
+                    } else if (sortField === 'gpi') {
+                        this.textContent = newOrder === 'asc' ? '和平指数 ↑' : '和平指数 ↓';
+                    } else if (sortField === 'travel') {
+                        this.textContent = newOrder === 'asc' ? '旅行安全指数 ↑' : '旅行安全指数 ↓';
+                    }
+                    
+                    // 排序数据
+                    sortData(sortField, newOrder);
+                });
+            });
+            
+            // 搜寻框输入事件
+            countrySearch.addEventListener('input', function() {
+                searchCountries(this.value);
+            });
+            
+            // 关闭国家信息面板
+            closeInfoBtn.addEventListener('click', hideCountryInfo);
+            
+            // 切换表格显示状态
+            toggleTableBtn.addEventListener('click', toggleTable);
+            
+            // 移动工具提示跟随鼠标
+            document.addEventListener('mousemove', function(e) {
+                if (tooltip.style.display === 'block') {
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY - 10) + 'px';
+                }
+            });
+            
+            // 初始化页面
+            document.documentElement.lang = 'zh-TW';
+            
+            // 页面加载后开始初始化流程
+            window.addEventListener('load', function() {
+                // 立即开始显示界面元素
+                showInterfaceElements();
+            });
+        });
+    </script>
+</body>
+</html>
