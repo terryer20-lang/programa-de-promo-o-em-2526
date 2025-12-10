@@ -1365,6 +1365,7 @@
             };
             
             // 國家數據 (從原CSV轉換) - 僅保留風險等級數據
+            // 重要修改：將台灣地區的風險等級改為與中國一致（"Medium"）
             const countryData = [
                 {"flagCode":"PK","country":"Pakistan","GlobalPeaceIndex_2025":2.8,"SafestCountriesIndexViaTravelSafe":26,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":null},
                 {"flagCode":"RU","country":"Russia","GlobalPeaceIndex_2025":3.44,"SafestCountriesIndexViaTravelSafe":34,"RiskLevelByCountryViaTravelSafe":"High","SafestCountriesRankUSNews_2024":80},
@@ -1406,7 +1407,8 @@
                 {"flagCode":"CA","country":"Canada","GlobalPeaceIndex_2025":1.49,"SafestCountriesIndexViaTravelSafe":88,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":6},
                 {"flagCode":"PL","country":"Poland","GlobalPeaceIndex_2025":1.71,"SafestCountriesIndexViaTravelSafe":84,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":22},
                 {"flagCode":"AU","country":"Australia","GlobalPeaceIndex_2025":1.51,"SafestCountriesIndexViaTravelSafe":86,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":9},
-                {"flagCode":"TW","country":"Taiwan","GlobalPeaceIndex_2025":1.73,"SafestCountriesIndexViaTravelSafe":54,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":null},
+                // 重要修改：將台灣地區的風險等級改為與中國一致
+                {"flagCode":"TW","country":"Taiwan","GlobalPeaceIndex_2025":1.73,"SafestCountriesIndexViaTravelSafe":54,"RiskLevelByCountryViaTravelSafe":"Medium","SafestCountriesRankUSNews_2024":null},
                 {"flagCode":"KZ","country":"Kazakhstan","GlobalPeaceIndex_2025":1.88,"SafestCountriesIndexViaTravelSafe":72,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":65},
                 {"flagCode":"RO","country":"Romania","GlobalPeaceIndex_2025":1.72,"SafestCountriesIndexViaTravelSafe":80,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":40},
                 {"flagCode":"NL","country":"Netherlands","GlobalPeaceIndex_2025":1.49,"SafestCountriesIndexViaTravelSafe":75,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":11},
@@ -1534,6 +1536,7 @@
             });
             
             // 國家名稱映射（地圖數據中的名稱到CSV中的名稱）
+            // 重要修改：將台灣地區映射到中國，確保使用中國的風險數據
             const countryNameMapping = {
                 "United States of America": "United States",
                 "Russian Federation": "Russia",
@@ -1555,7 +1558,8 @@
                 "Côte d'Ivoire": "Ivory Coast",
                 "Cabo Verde": "Cape Verde",
                 "Palestine": "Palestine",
-                "Taiwan (Province of China)": "Taiwan",
+                // 重要修改：將台灣地區映射到中國，確保顏色一致性
+                "Taiwan (Province of China)": "China", // 修改這裡：將Taiwan映射到China
                 "Korea (Democratic People's Republic of)": "North Korea",
                 "Korea, Republic of": "South Korea",
                 "Türkiye": "Turkey",
@@ -1891,8 +1895,14 @@
                                     else if (riskLevel === 'Medium') riskLevelChinese = '中等';
                                     else if (riskLevel === 'High') riskLevelChinese = '高';
                                     
+                                    // 特別處理台灣地區的顯示
+                                    let displayName = d.properties.name;
+                                    if (d.properties.name === "Taiwan (Province of China)") {
+                                        displayName = "台灣地區 (中國)";
+                                    }
+                                    
                                     tooltip.innerHTML = `
-                                        <strong>${d.properties.name}</strong><br/>
+                                        <strong>${displayName}</strong><br/>
                                         風險等級: ${riskLevelChinese}
                                     `;
                                 } else {
@@ -2067,8 +2077,14 @@
                 const countryNameElement = document.getElementById('country-name');
                 const countryRisk = document.getElementById('country-risk');
                 
-                // 設置國家名稱（僅顯示英文名稱）
-                countryNameElement.textContent = countryName;
+                // 特別處理台灣地區的顯示
+                let displayName = countryName;
+                if (countryName === "Taiwan (Province of China)") {
+                    displayName = "台灣地區 (中國)";
+                }
+                
+                // 設置國家名稱
+                countryNameElement.textContent = displayName;
                 
                 if (countryInfo) {
                     // 風險等級
@@ -2195,5 +2211,4 @@
         });
     </script>
 </body>
-</html>
-
+</html
