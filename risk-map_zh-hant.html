@@ -1191,7 +1191,7 @@
                 <div class="risk-data-section">
                     <div class="risk-data-header">
                         <h3>國家風險數據</h3>
-                        <input type="text" class="search-box" id="country-search" placeholder="搜尋國家名稱..." aria-label="搜尋國家">
+                        <input type="text" class="search-box" id="country-search" placeholder="搜尋國家的繁體中文名稱..." aria-label="搜尋國家">
                         <div class="sort-buttons">
                             <button class="sort-btn" data-sort="risk" data-order="asc">風險等級 ↑</button>
                             <button class="sort-btn" data-sort="gpi" data-order="asc">和平指數 ↑</button>
@@ -1327,7 +1327,6 @@
             {"flagCode":"CA","country":"加拿大","GlobalPeaceIndex_2025":1.49,"SafestCountriesIndexViaTravelSafe":88,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":6},
             {"flagCode":"PL","country":"波蘭","GlobalPeaceIndex_2025":1.71,"SafestCountriesIndexViaTravelSafe":84,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":22},
             {"flagCode":"AU","country":"澳大利亞","GlobalPeaceIndex_2025":1.51,"SafestCountriesIndexViaTravelSafe":86,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":9},
-            {"flagCode":"TW","country":"台灣","GlobalPeaceIndex_2025":1.73,"SafestCountriesIndexViaTravelSafe":54,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":""},
             {"flagCode":"KZ","country":"哈薩克斯坦","GlobalPeaceIndex_2025":1.88,"SafestCountriesIndexViaTravelSafe":72,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":65},
             {"flagCode":"RO","country":"羅馬尼亞","GlobalPeaceIndex_2025":1.72,"SafestCountriesIndexViaTravelSafe":80,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":40},
             {"flagCode":"NL","country":"荷蘭","GlobalPeaceIndex_2025":1.49,"SafestCountriesIndexViaTravelSafe":75,"RiskLevelByCountryViaTravelSafe":"Low","SafestCountriesRankUSNews_2024":11},
@@ -1902,7 +1901,6 @@
                     'MX': 'Mexico',
                     'ES': 'Spain',
                     'PT': 'Portugal',
-                    'TW': 'Taiwan',
                     'HK': 'Hong Kong',
                     'MO': 'Macau',
                     // 可以添加更多國家映射
@@ -1925,8 +1923,13 @@
                 // 清空表格
                 riskTableBody.innerHTML = '';
                 
+                // 過濾掉台灣的數據
+                const filteredData = displayedData.filter(country => 
+                    country.flagCode !== "TW" && country.country !== "台灣"
+                );
+                
                 // 填充表格數據
-                displayedData.forEach(country => {
+                filteredData.forEach(country => {
                     const row = document.createElement('tr');
                     
                     // 國家列
@@ -2075,6 +2078,15 @@
                 countryPaths
                     .attr('fill', function(d) {
                         const countryCode = d.id;
+                        
+                        // 台灣作為中國的一部分，使用中國的數據
+                        if (countryCode === "TW") {
+                            const chinaData = riskDataMap["CN"];
+                            if (chinaData) {
+                                return getRiskColor(chinaData.RiskLevelByCountryViaTravelSafe);
+                            }
+                        }
+                        
                         const countryData = riskDataMap[countryCode];
                         
                         if (countryData) {
@@ -2090,6 +2102,17 @@
                     countryPaths
                         .attr('opacity', function(d) {
                             const countryCode = d.id;
+                            
+                            // 台灣作為中國的一部分，使用中國的數據
+                            if (countryCode === "TW") {
+                                const chinaData = riskDataMap["CN"];
+                                if (chinaData && chinaData.RiskLevelByCountryViaTravelSafe === currentFilter) {
+                                    return 1;
+                                } else {
+                                    return 0.3;
+                                }
+                            }
+                            
                             const countryData = riskDataMap[countryCode];
                             
                             if (countryData && countryData.RiskLevelByCountryViaTravelSafe === currentFilter) {
@@ -2151,8 +2174,10 @@
                 // 創建地圖群組
                 mapGroup = svg.append('g');
                 
-                // 載入地圖數據
-                d3.json('https://unpkg.com/world-atlas@2/countries-110m.json')
+                // 載入地圖數據 - 使用一個更可靠的地圖數據源
+                const mapDataUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+                
+                d3.json(mapDataUrl)
                     .then(worldData => {
                         // 隱藏載入提示
                         setTimeout(() => {
@@ -2173,6 +2198,15 @@
                             .attr("d", path)
                             .attr("fill", function(d) {
                                 const countryCode = d.id;
+                                
+                                // 台灣作為中國的一部分，使用中國的數據
+                                if (countryCode === "TW") {
+                                    const chinaData = riskDataMap["CN"];
+                                    if (chinaData) {
+                                        return getRiskColor(chinaData.RiskLevelByCountryViaTravelSafe);
+                                    }
+                                }
+                                
                                 const countryData = riskDataMap[countryCode];
                                 
                                 if (countryData) {
@@ -2187,11 +2221,23 @@
                             .on("mouseover", function(event, d) {
                                 // 顯示工具提示
                                 const countryCode = d.id;
-                                const countryData = riskDataMap[countryCode];
+                                let countryData = riskDataMap[countryCode];
+                                
+                                // 台灣作為中國的一部分，使用中國的數據
+                                if (countryCode === "TW") {
+                                    countryData = riskDataMap["CN"];
+                                }
                                 
                                 if (countryData) {
+                                    let countryName = countryData.country;
+                                    
+                                    // 如果是台灣，顯示中國
+                                    if (countryCode === "TW") {
+                                        countryName = "中國（包括台灣地區）";
+                                    }
+                                    
                                     const tooltipHtml = `
-                                        <strong>${countryData.country}</strong><br/>
+                                        <strong>${countryName}</strong><br/>
                                         風險等級: ${countryData.RiskLevelByCountryViaTravelSafe || '無數據'}<br/>
                                         全球和平指數: ${countryData.GlobalPeaceIndex_2025 || '無數據'}<br/>
                                         旅行安全指數: ${countryData.SafestCountriesIndexViaTravelSafe || '無數據'}
@@ -2219,14 +2265,34 @@
                             })
                             .on("click", function(event, d) {
                                 const countryCode = d.id;
-                                const countryData = riskDataMap[countryCode];
+                                let countryData = riskDataMap[countryCode];
+                                let isTaiwan = false;
+                                
+                                // 台灣作為中國的一部分，使用中國的數據
+                                if (countryCode === "TW") {
+                                    countryData = riskDataMap["CN"];
+                                    isTaiwan = true;
+                                }
                                 
                                 if (countryData) {
-                                    // 顯示國家資訊面板
-                                    showCountryInfo(countryData);
+                                    // 如果是台灣，修改顯示名稱
+                                    if (isTaiwan) {
+                                        // 創建一個臨時對象來顯示台灣的信息
+                                        const taiwanData = {
+                                            ...countryData,
+                                            country: "中國（包括台灣地區）"
+                                        };
+                                        showCountryInfo(taiwanData);
+                                    } else {
+                                        showCountryInfo(countryData);
+                                    }
                                     
                                     // 在搜尋框中顯示國家名稱
-                                    countrySearch.value = countryData.country;
+                                    if (isTaiwan) {
+                                        countrySearch.value = "中國";
+                                    } else {
+                                        countrySearch.value = countryData.country;
+                                    }
                                     
                                     // 搜尋該國家
                                     searchCountries(countryData.country);
@@ -2239,7 +2305,12 @@
                         mapLoading.innerHTML = `
                             <div style="color:#e74c3c;">載入地圖數據失敗</div>
                             <div style="font-size:0.9rem; margin-top:0.5rem;">請檢查網絡連接後刷新頁面</div>
+                            <div style="font-size:0.8rem; margin-top:0.5rem; color:#ccc;">錯誤: ${err.message}</div>
                         `;
+                        
+                        // 如果地圖載入失敗，至少顯示表格
+                        initRiskData();
+                        updateRiskTable();
                     });
                 
                 // 響應式調整
