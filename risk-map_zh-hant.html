@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>全球風險地圖 - 領事保護與居民權利</title>
-    <!-- 引入 D3.js 和 TopoJSON -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://unpkg.com/topojson-client@3"></script>
     <style>
         /* 基礎重置與移動優先樣式 */
         * {
@@ -245,6 +242,9 @@
             z-index: 1;
             margin-top: 60px;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #map-container {
@@ -252,17 +252,30 @@
             height: 100%;
             position: relative;
             overflow: hidden;
-            cursor: grab;
-            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        #map-container:active {
-            cursor: grabbing;
-        }
-
-        #world-map {
+        .static-map {
             width: 100%;
             height: 100%;
+            object-fit: contain;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 2rem;
         }
 
         /* 國家資訊面板 */
@@ -409,39 +422,6 @@
 
         .risk-low {
             background-color: rgba(0, 128, 0, 0.8);
-        }
-
-        /* 地圖縮放控制按鈕 */
-        .zoom-controls {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .zoom-btn {
-            width: 44px;
-            height: 44px;
-            background: rgba(0, 0, 0, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s;
-            touch-action: manipulation;
-        }
-
-        .zoom-btn:hover {
-            background: rgba(0, 0, 0, 0.95);
         }
 
         /* 內容區域 - 在地圖下方 */
@@ -607,6 +587,11 @@
 
         .data-table tr:hover {
             background-color: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .data-table tr.selected {
+            background-color: rgba(255, 215, 0, 0.1);
         }
 
         .risk-badge {
@@ -1100,12 +1085,13 @@
         <section class="map-section">
             <!-- 地圖容器 -->
             <div id="map-container">
-                <svg id="world-map"></svg>
-
-                <!-- 地圖載入提示 -->
-                <div class="map-loading" id="map-loading">
-                    <div class="loading-spinner"></div>
-                    正在載入全球風險地圖...
+                <!-- 靜態風險地圖圖片 -->
+                <img src="風險地圖.png" alt="全球風險地圖" class="static-map" id="static-map">
+                
+                <!-- 如果圖片載入失敗顯示備用訊息 -->
+                <div class="map-placeholder" id="map-placeholder" style="display:none;">
+                    全球風險地圖<br>
+                    <small>地圖圖片載入失敗，請檢查圖片路徑</small>
                 </div>
                 
                 <!-- 國家資訊面板 -->
@@ -1148,13 +1134,6 @@
                     <button class="filter-btn risk-medium" data-risk="Medium">中風險國家</button>
                     <button class="filter-btn risk-low" data-risk="Low">低風險國家</button>
                 </div>
-            </div>
-            
-            <!-- 縮放控制按鈕 -->
-            <div class="zoom-controls">
-                <button class="zoom-btn" id="zoom-in">+</button>
-                <button class="zoom-btn" id="zoom-out">-</button>
-                <button class="zoom-btn" id="reset-zoom">↺</button>
             </div>
         </section>
 
@@ -1230,11 +1209,11 @@
                     
                     <h3>如何使用風險地圖</h3>
                     <ol>
-                        <li><strong>查看地圖</strong> - 點擊地圖上的國家查看詳細風險信息</li>
-                        <li><strong>篩選數據</strong> - 使用上方按鈕篩選不同風險等級的國家</li>
+                        <li><strong>查看地圖</strong> - 上方為全球風險地圖，顯示各國風險等級</li>
+                        <li><strong>篩選數據</strong> - 使用地圖上方按鈕篩選不同風險等級的國家</li>
                         <li><strong>搜尋國家</strong> - 在搜尋框中輸入國家名稱快速查找</li>
+                        <li><strong>查看詳細數據</strong> - 點擊表格中的國家查看詳細風險信息</li>
                         <li><strong>排序表格</strong> - 點擊表頭按不同指標排序數據</li>
-                        <li><strong>縮放地圖</strong> - 使用右下角按鈕或雙指手勢縮放地圖</li>
                     </ol>
                     
                     <!-- 只保留一個返回主頁按鈕 -->
@@ -1675,7 +1654,6 @@
             const menuToggle = document.querySelector('.menu-toggle');
             const sideMenu = document.getElementById('side-menu');
             const menuOverlay = document.getElementById('menu-overlay');
-            const mapLoading = document.getElementById('map-loading');
             const contentSection = document.getElementById('content-section');
             const langButtons = document.querySelectorAll('.lang-btn');
             const footer = document.getElementById('footer');
@@ -1688,9 +1666,8 @@
             const closeInfoBtn = document.getElementById('close-info-btn');
             const toggleTableBtn = document.getElementById('toggle-table-btn');
             const dataTableContainer = document.getElementById('data-table-container');
-            const zoomInBtn = document.getElementById('zoom-in');
-            const zoomOutBtn = document.getElementById('zoom-out');
-            const resetZoomBtn = document.getElementById('reset-zoom');
+            const staticMap = document.getElementById('static-map');
+            const mapPlaceholder = document.getElementById('map-placeholder');
             
             // 國家資訊面板元素
             const countryNameEnElement = document.getElementById('country-name-en');
@@ -1698,15 +1675,13 @@
             const riskLevelElement = document.getElementById('risk-level');
             const gpiIndexElement = document.getElementById('gpi-index');
             const travelSafeIndexElement = document.getElementById('travel-safe-index');
+            const countryNameTitle = document.getElementById('country-name');
             
             let lastScrollTop = 0;
             let isMenuOpen = false;
             
             // 滾動監聽變量
             let isFooterVisible = false;
-            
-            // D3.js 變數
-            let width, height, svg, projection, path, mapGroup, countryPaths, zoom;
             
             // 風險數據索引
             let riskDataMap = {};
@@ -1716,6 +1691,9 @@
             
             // 表格折疊狀態
             let isTableExpanded = false;
+            
+            // 當前選中的表格行
+            let selectedRow = null;
             
             // 漢堡菜單切換功能
             function toggleMenu() {
@@ -1820,7 +1798,7 @@
                     case 'High':
                         return 'rgba(213, 43, 30, 0.8)'; // 紅色
                     case 'Medium':
-                        return 'rgba(255, 165, 0, 0.8)'; // 黃色
+                        return 'rgba(255, 165, 0, 0.8)'; // 橙色
                     case 'Low':
                         return 'rgba(0, 128, 0, 0.8)'; // 綠色
                     default:
@@ -1849,11 +1827,10 @@
             /**
              * 顯示國家資訊面板
              * @param {Object} countryData - 國家數據
+             * @param {string} countryCode - 國家代碼
              */
-            function showCountryInfo(countryData) {
-                // 獲取國家英文名（這裡使用flagCode作為英文名，實際應使用英文名數據）
-                // 由於數據中只有中文名，我們將flagCode作為英文名顯示
-                const countryCode = countryData.flagCode;
+            function showCountryInfo(countryData, countryCode) {
+                // 獲取國家英文名
                 const countryNameEn = getCountryEnglishName(countryCode) || countryCode;
                 
                 // 更新面板內容
@@ -1862,6 +1839,7 @@
                 riskLevelElement.textContent = countryData.RiskLevelByCountryViaTravelSafe || '無數據';
                 gpiIndexElement.textContent = countryData.GlobalPeaceIndex_2025 || '無數據';
                 travelSafeIndexElement.textContent = countryData.SafestCountriesIndexViaTravelSafe || '無數據';
+                countryNameTitle.textContent = countryData.country;
                 
                 // 設置風險等級顏色
                 riskLevelElement.className = 'info-value';
@@ -1903,6 +1881,7 @@
                     'PT': 'Portugal',
                     'HK': 'Hong Kong',
                     'MO': 'Macau',
+                    'TW': 'Taiwan (Part of China)',
                     // 可以添加更多國家映射
                 };
                 
@@ -1923,14 +1902,16 @@
                 // 清空表格
                 riskTableBody.innerHTML = '';
                 
-                // 過濾掉台灣的數據
+                // 過濾掉台灣的數據（台灣數據不單獨顯示在表格中）
                 const filteredData = displayedData.filter(country => 
-                    country.flagCode !== "TW" && country.country !== "台灣"
+                    country.flagCode !== "TW"
                 );
                 
                 // 填充表格數據
-                filteredData.forEach(country => {
+                filteredData.forEach((country, index) => {
                     const row = document.createElement('tr');
+                    row.dataset.index = index;
+                    row.dataset.countryCode = country.flagCode;
                     
                     // 國家列
                     const countryCell = document.createElement('td');
@@ -1960,6 +1941,53 @@
                     safestRankCell.textContent = country.SafestCountriesRankUSNews_2024 || '無數據';
                     row.appendChild(safestRankCell);
                     
+                    // 添加點擊事件
+                    row.addEventListener('click', function() {
+                        // 移除之前選中的行的樣式
+                        if (selectedRow) {
+                            selectedRow.classList.remove('selected');
+                        }
+                        
+                        // 添加當前選中行的樣式
+                        this.classList.add('selected');
+                        selectedRow = this;
+                        
+                        // 顯示國家信息
+                        const countryCode = this.dataset.countryCode;
+                        const countryData = riskDataMap[countryCode];
+                        
+                        if (countryData) {
+                            showCountryInfo(countryData, countryCode);
+                            
+                            // 在搜尋框中顯示國家名稱
+                            countrySearch.value = countryData.country;
+                        }
+                    });
+                    
+                    // 添加懸停事件顯示工具提示
+                    row.addEventListener('mouseover', function(e) {
+                        const countryCode = this.dataset.countryCode;
+                        const countryData = riskDataMap[countryCode];
+                        
+                        if (countryData) {
+                            const tooltipHtml = `
+                                <strong>${countryData.country}</strong><br/>
+                                風險等級: ${countryData.RiskLevelByCountryViaTravelSafe || '無數據'}<br/>
+                                全球和平指數: ${countryData.GlobalPeaceIndex_2025 || '無數據'}<br/>
+                                旅行安全指數: ${countryData.SafestCountriesIndexViaTravelSafe || '無數據'}
+                            `;
+                            
+                            tooltip.innerHTML = tooltipHtml;
+                            tooltip.style.display = 'block';
+                            tooltip.style.left = (e.pageX + 10) + 'px';
+                            tooltip.style.top = (e.pageY - 10) + 'px';
+                        }
+                    });
+                    
+                    row.addEventListener('mouseout', function() {
+                        tooltip.style.display = 'none';
+                    });
+                    
                     riskTableBody.appendChild(row);
                 });
             }
@@ -1981,9 +2009,6 @@
                 
                 // 應用當前排序
                 sortData(currentSort.field, currentSort.order);
-                
-                // 更新地圖高亮
-                highlightCountriesOnMap();
                 
                 // 更新表格
                 updateRiskTable();
@@ -2061,67 +2086,26 @@
                 // 應用當前排序
                 sortData(currentSort.field, currentSort.order);
                 
-                // 更新地圖高亮
-                highlightCountriesOnMap();
-                
                 // 更新表格
                 updateRiskTable();
             }
             
             /**
-             * 根據當前篩選條件高亮地圖上的國家
+             * 檢查圖片是否成功載入
              */
-            function highlightCountriesOnMap() {
-                if (!countryPaths) return;
+            function checkImageLoad() {
+                // 如果圖片載入失敗，顯示備用訊息
+                staticMap.onerror = function() {
+                    console.error("地圖圖片載入失敗");
+                    staticMap.style.display = 'none';
+                    mapPlaceholder.style.display = 'flex';
+                };
                 
-                // 重置所有國家顏色
-                countryPaths
-                    .attr('fill', function(d) {
-                        const countryCode = d.id;
-                        
-                        // 台灣作為中國的一部分，使用中國的數據
-                        if (countryCode === "TW") {
-                            const chinaData = riskDataMap["CN"];
-                            if (chinaData) {
-                                return getRiskColor(chinaData.RiskLevelByCountryViaTravelSafe);
-                            }
-                        }
-                        
-                        const countryData = riskDataMap[countryCode];
-                        
-                        if (countryData) {
-                            return getRiskColor(countryData.RiskLevelByCountryViaTravelSafe);
-                        } else {
-                            return 'rgba(128, 128, 128, 0.5)'; // 灰色（無數據）
-                        }
-                    })
-                    .attr('opacity', 1);
-                
-                // 如果當前篩選不是"全部"，則淡化未選中的國家
-                if (currentFilter !== 'all') {
-                    countryPaths
-                        .attr('opacity', function(d) {
-                            const countryCode = d.id;
-                            
-                            // 台灣作為中國的一部分，使用中國的數據
-                            if (countryCode === "TW") {
-                                const chinaData = riskDataMap["CN"];
-                                if (chinaData && chinaData.RiskLevelByCountryViaTravelSafe === currentFilter) {
-                                    return 1;
-                                } else {
-                                    return 0.3;
-                                }
-                            }
-                            
-                            const countryData = riskDataMap[countryCode];
-                            
-                            if (countryData && countryData.RiskLevelByCountryViaTravelSafe === currentFilter) {
-                                return 1;
-                            } else {
-                                return 0.3;
-                            }
-                        });
-                }
+                // 如果圖片載入成功，隱藏備用訊息
+                staticMap.onload = function() {
+                    console.log("地圖圖片載入成功");
+                    mapPlaceholder.style.display = 'none';
+                };
             }
             
             /**
@@ -2141,226 +2125,8 @@
                 }
             }
             
-            // ==================== 地圖初始化 ====================
-            /**
-             * 初始化D3地圖
-             */
-            function initMap() {
-                const container = document.getElementById('map-container');
-                width = container.clientWidth;
-                height = container.clientHeight;
-                
-                svg = d3.select('#world-map')
-                    .attr('width', width)
-                    .attr('height', height);
-                
-                // 設置投影
-                projection = d3.geoMercator()
-                    .scale(width / 6.5)
-                    .translate([width / 2, height / 1.5]);
-                
-                path = d3.geoPath(projection);
-                
-                // 設置縮放行為
-                zoom = d3.zoom()
-                    .scaleExtent([0.5, 8]) // 縮放範圍
-                    .on('zoom', function(event) {
-                        mapGroup.attr('transform', event.transform);
-                    });
-                
-                // 應用縮放行為到SVG
-                svg.call(zoom);
-                
-                // 創建地圖群組
-                mapGroup = svg.append('g');
-                
-                // 載入地圖數據 - 使用一個更可靠的地圖數據源
-                const mapDataUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
-                
-                d3.json(mapDataUrl)
-                    .then(worldData => {
-                        // 隱藏載入提示
-                        setTimeout(() => {
-                            mapLoading.style.opacity = '0';
-                            setTimeout(() => {
-                                mapLoading.style.display = 'none';
-                                mapLoading.classList.remove('visible');
-                            }, 500);
-                        }, 800);
-                        
-                        const countries = topojson.feature(worldData, worldData.objects.countries).features;
-                        
-                        // 繪製國家
-                        countryPaths = mapGroup.selectAll(".country")
-                            .data(countries)
-                            .enter().append("path")
-                            .attr("class", "country")
-                            .attr("d", path)
-                            .attr("fill", function(d) {
-                                const countryCode = d.id;
-                                
-                                // 台灣作為中國的一部分，使用中國的數據
-                                if (countryCode === "TW") {
-                                    const chinaData = riskDataMap["CN"];
-                                    if (chinaData) {
-                                        return getRiskColor(chinaData.RiskLevelByCountryViaTravelSafe);
-                                    }
-                                }
-                                
-                                const countryData = riskDataMap[countryCode];
-                                
-                                if (countryData) {
-                                    return getRiskColor(countryData.RiskLevelByCountryViaTravelSafe);
-                                } else {
-                                    return 'rgba(128, 128, 128, 0.5)'; // 灰色（無數據）
-                                }
-                            })
-                            .attr("stroke", "rgba(255, 255, 255, 0.3)")
-                            .attr("stroke-width", 0.5)
-                            .style("cursor", "pointer")
-                            .on("mouseover", function(event, d) {
-                                // 顯示工具提示
-                                const countryCode = d.id;
-                                let countryData = riskDataMap[countryCode];
-                                
-                                // 台灣作為中國的一部分，使用中國的數據
-                                if (countryCode === "TW") {
-                                    countryData = riskDataMap["CN"];
-                                }
-                                
-                                if (countryData) {
-                                    let countryName = countryData.country;
-                                    
-                                    // 如果是台灣，顯示中國
-                                    if (countryCode === "TW") {
-                                        countryName = "中國（包括台灣地區）";
-                                    }
-                                    
-                                    const tooltipHtml = `
-                                        <strong>${countryName}</strong><br/>
-                                        風險等級: ${countryData.RiskLevelByCountryViaTravelSafe || '無數據'}<br/>
-                                        全球和平指數: ${countryData.GlobalPeaceIndex_2025 || '無數據'}<br/>
-                                        旅行安全指數: ${countryData.SafestCountriesIndexViaTravelSafe || '無數據'}
-                                    `;
-                                    
-                                    tooltip.innerHTML = tooltipHtml;
-                                    tooltip.style.display = 'block';
-                                    tooltip.style.left = (event.pageX + 10) + 'px';
-                                    tooltip.style.top = (event.pageY - 10) + 'px';
-                                }
-                                
-                                // 高亮當前國家
-                                d3.select(this)
-                                    .attr("stroke", "#FFD700")
-                                    .attr("stroke-width", 2);
-                            })
-                            .on("mouseout", function() {
-                                // 隱藏工具提示
-                                tooltip.style.display = 'none';
-                                
-                                // 恢復正常邊框
-                                d3.select(this)
-                                    .attr("stroke", "rgba(255, 255, 255, 0.3)")
-                                    .attr("stroke-width", 0.5);
-                            })
-                            .on("click", function(event, d) {
-                                const countryCode = d.id;
-                                let countryData = riskDataMap[countryCode];
-                                let isTaiwan = false;
-                                
-                                // 台灣作為中國的一部分，使用中國的數據
-                                if (countryCode === "TW") {
-                                    countryData = riskDataMap["CN"];
-                                    isTaiwan = true;
-                                }
-                                
-                                if (countryData) {
-                                    // 如果是台灣，修改顯示名稱
-                                    if (isTaiwan) {
-                                        // 創建一個臨時對象來顯示台灣的信息
-                                        const taiwanData = {
-                                            ...countryData,
-                                            country: "中國（包括台灣地區）"
-                                        };
-                                        showCountryInfo(taiwanData);
-                                    } else {
-                                        showCountryInfo(countryData);
-                                    }
-                                    
-                                    // 在搜尋框中顯示國家名稱
-                                    if (isTaiwan) {
-                                        countrySearch.value = "中國";
-                                    } else {
-                                        countrySearch.value = countryData.country;
-                                    }
-                                    
-                                    // 搜尋該國家
-                                    searchCountries(countryData.country);
-                                }
-                            });
-                        
-                    })
-                    .catch(err => {
-                        console.error("載入地圖數據失敗:", err);
-                        mapLoading.innerHTML = `
-                            <div style="color:#e74c3c;">載入地圖數據失敗</div>
-                            <div style="font-size:0.9rem; margin-top:0.5rem;">請檢查網絡連接後刷新頁面</div>
-                            <div style="font-size:0.8rem; margin-top:0.5rem; color:#ccc;">錯誤: ${err.message}</div>
-                        `;
-                        
-                        // 如果地圖載入失敗，至少顯示表格
-                        initRiskData();
-                        updateRiskTable();
-                    });
-                
-                // 響應式調整
-                window.addEventListener('resize', function() {
-                    width = container.clientWidth;
-                    height = container.clientHeight;
-                    
-                    svg.attr('width', width).attr('height', height);
-                    
-                    projection
-                        .scale(width / 6.5)
-                        .translate([width / 2, height / 1.5]);
-                    
-                    // 更新所有路徑
-                    if (countryPaths) {
-                        countryPaths.attr("d", path);
-                    }
-                });
-            }
-            
-            /**
-             * 縮放地圖
-             * @param {number} factor - 縮放因子
-             */
-            function zoomMap(factor) {
-                const currentTransform = d3.zoomTransform(svg.node());
-                const newScale = currentTransform.k * factor;
-                
-                // 限制縮放範圍
-                if (newScale < 0.5 || newScale > 8) return;
-                
-                svg.transition()
-                    .duration(300)
-                    .call(zoom.scaleTo, newScale);
-            }
-            
-            /**
-             * 重置縮放
-             */
-            function resetZoom() {
-                svg.transition()
-                    .duration(300)
-                    .call(zoom.transform, d3.zoomIdentity);
-            }
-            
             // 顯示界面元素
             function showInterfaceElements() {
-                // 顯示地圖載入提示
-                mapLoading.classList.add('visible');
-                
                 // 延遲後顯示標題列（從上往下進入）
                 setTimeout(() => {
                     header.classList.add('visible');
@@ -2369,8 +2135,8 @@
                 // 初始化風險數據
                 initRiskData();
                 
-                // 初始化地圖
-                setTimeout(initMap, 500);
+                // 檢查圖片載入
+                checkImageLoad();
                 
                 // 初始化數據表格
                 updateRiskTable();
@@ -2401,6 +2167,15 @@
                     
                     // 篩選數據
                     filterData(riskLevel);
+                    
+                    // 隱藏國家資訊面板（因為篩選後選中的國家可能不在篩選結果中）
+                    hideCountryInfo();
+                    
+                    // 清除選中的行
+                    if (selectedRow) {
+                        selectedRow.classList.remove('selected');
+                        selectedRow = null;
+                    }
                 });
             });
             
@@ -2438,6 +2213,15 @@
             // 搜尋框輸入事件
             countrySearch.addEventListener('input', function() {
                 searchCountries(this.value);
+                
+                // 隱藏國家資訊面板（因為搜尋後選中的國家可能不在搜尋結果中）
+                hideCountryInfo();
+                
+                // 清除選中的行
+                if (selectedRow) {
+                    selectedRow.classList.remove('selected');
+                    selectedRow = null;
+                }
             });
             
             // 關閉國家資訊面板
@@ -2445,11 +2229,6 @@
             
             // 切換表格顯示狀態
             toggleTableBtn.addEventListener('click', toggleTable);
-            
-            // 縮放控制
-            zoomInBtn.addEventListener('click', () => zoomMap(1.5));
-            zoomOutBtn.addEventListener('click', () => zoomMap(0.67));
-            resetZoomBtn.addEventListener('click', resetZoom);
             
             // 移動工具提示跟隨鼠標
             document.addEventListener('mousemove', function(e) {
@@ -2467,19 +2246,6 @@
                 // 立即開始顯示界面元素
                 showInterfaceElements();
             });
-            
-            // 如果地圖載入失敗的後備方案
-            setTimeout(function() {
-                if (mapLoading.style.display !== 'none') {
-                    mapLoading.innerHTML = "地圖載入失敗，顯示數據表格...<br><small>請檢查網絡連接</small>";
-                    
-                    // 初始化風險數據
-                    initRiskData();
-                    
-                    // 初始化數據表格
-                    updateRiskTable();
-                }
-            }, 10000);
         });
     </script>
 </body>
