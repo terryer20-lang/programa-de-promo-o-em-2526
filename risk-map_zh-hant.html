@@ -27,6 +27,8 @@
             color: #333;
             background: linear-gradient(180deg, #0a0f2e 0%, #1A2B6D 100%);
             min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
         }
 
         /* 觸控目標至少44px */
@@ -242,6 +244,7 @@
             background: linear-gradient(to bottom, #0a0f2e 0%, #1A2B6D 100%);
             z-index: 1;
             margin-top: 60px;
+            overflow: hidden;
         }
 
         #map-container {
@@ -249,6 +252,12 @@
             height: 100%;
             position: relative;
             overflow: hidden;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        #map-container:active {
+            cursor: grabbing;
         }
 
         #world-map {
@@ -262,23 +271,25 @@
             bottom: 20px;
             left: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.95);
             border-radius: 12px;
             padding: 1.5rem;
             color: white;
             z-index: 100;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
             transform: translateY(20px);
             opacity: 0;
             transition: transform 0.4s ease-out, opacity 0.4s ease-out;
             max-width: 400px;
+            display: none;
         }
 
         .country-info-panel.visible {
             transform: translateY(0);
             opacity: 1;
+            display: block;
         }
 
         .country-info-header {
@@ -298,10 +309,15 @@
             background: none;
             border: none;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
             padding: 0.5rem;
             line-height: 1;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .country-info-details {
@@ -313,6 +329,10 @@
         .info-item {
             display: flex;
             flex-direction: column;
+        }
+
+        .info-item.full-width {
+            grid-column: 1 / -1;
         }
 
         .info-label {
@@ -356,7 +376,7 @@
             flex-wrap: wrap;
             gap: 0.8rem;
             padding: 1rem;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.85);
             border-radius: 8px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -391,31 +411,37 @@
             background-color: rgba(0, 128, 0, 0.8);
         }
 
-        /* 地圖圖例 */
-        .map-legend {
+        /* 地圖縮放控制按鈕 */
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
             display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 500px;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .legend-item {
+        .zoom-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            color: white;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            touch-action: manipulation;
         }
 
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
+        .zoom-btn:hover {
+            background: rgba(0, 0, 0, 0.95);
         }
 
         /* 內容區域 - 在地圖下方 */
@@ -424,7 +450,7 @@
             z-index: 10;
             padding: 2rem 1.5rem;
             color: white;
-            background-color: rgba(10, 15, 46, 0.9);
+            background-color: rgba(10, 15, 46, 0.95);
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.8s ease-out 0.3s, transform 0.8s ease-out 0.3s;
@@ -889,7 +915,7 @@
                 align-items: flex-start;
             }
 
-            .map-controls, .map-legend {
+            .map-controls {
                 max-width: 300px;
             }
         }
@@ -908,7 +934,7 @@
                 gap: 4rem;
             }
 
-            .map-controls, .map-legend {
+            .map-controls {
                 max-width: 350px;
             }
         }
@@ -948,8 +974,19 @@
                 right: 10px;
             }
 
-            .map-controls, .map-legend {
+            .map-controls {
                 padding: 0.8rem;
+            }
+            
+            .zoom-controls {
+                bottom: 10px;
+                right: 10px;
+            }
+            
+            .zoom-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.3rem;
             }
         }
     </style>
@@ -1078,6 +1115,14 @@
                         <button class="close-info-btn" id="close-info-btn">×</button>
                     </div>
                     <div class="country-info-details">
+                        <div class="info-item full-width">
+                            <div class="info-label">國家英文名</div>
+                            <div class="info-value" id="country-name-en">-</div>
+                        </div>
+                        <div class="info-item full-width">
+                            <div class="info-label">國家中文名</div>
+                            <div class="info-value" id="country-name-zh">-</div>
+                        </div>
                         <div class="info-item">
                             <div class="info-label">風險等級</div>
                             <div class="info-value" id="risk-level">-</div>
@@ -1089,10 +1134,6 @@
                         <div class="info-item">
                             <div class="info-label">旅行安全指數</div>
                             <div class="info-value" id="travel-safe-index">-</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">最安全國家排名</div>
-                            <div class="info-value" id="safest-rank">-</div>
                         </div>
                     </div>
                 </div>
@@ -1107,22 +1148,13 @@
                     <button class="filter-btn risk-medium" data-risk="Medium">中風險國家</button>
                     <button class="filter-btn risk-low" data-risk="Low">低風險國家</button>
                 </div>
-                
-                <!-- 地圖圖例 -->
-                <div class="map-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: rgba(213, 43, 30, 0.8);"></div>
-                        <span>高風險國家</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: rgba(255, 165, 0, 0.8);"></div>
-                        <span>中風險國家</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: rgba(0, 128, 0, 0.8);"></div>
-                        <span>低風險國家</span>
-                    </div>
-                </div>
+            </div>
+            
+            <!-- 縮放控制按鈕 -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoom-in">+</button>
+                <button class="zoom-btn" id="zoom-out">-</button>
+                <button class="zoom-btn" id="reset-zoom">↺</button>
             </div>
         </section>
 
@@ -1161,9 +1193,9 @@
                         <h3>國家風險數據</h3>
                         <input type="text" class="search-box" id="country-search" placeholder="搜尋國家名稱..." aria-label="搜尋國家">
                         <div class="sort-buttons">
-                            <button class="sort-btn" data-sort="country" data-order="asc">國家名稱 A-Z</button>
                             <button class="sort-btn" data-sort="risk" data-order="asc">風險等級 ↑</button>
                             <button class="sort-btn" data-sort="gpi" data-order="asc">和平指數 ↑</button>
+                            <button class="sort-btn" data-sort="travel" data-order="asc">旅行安全指數 ↑</button>
                         </div>
                     </div>
                     
@@ -1202,11 +1234,12 @@
                         <li><strong>篩選數據</strong> - 使用上方按鈕篩選不同風險等級的國家</li>
                         <li><strong>搜尋國家</strong> - 在搜尋框中輸入國家名稱快速查找</li>
                         <li><strong>排序表格</strong> - 點擊表頭按不同指標排序數據</li>
+                        <li><strong>縮放地圖</strong> - 使用右下角按鈕或雙指手勢縮放地圖</li>
                     </ol>
                     
                     <!-- 只保留一個返回主頁按鈕 -->
                     <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-                        <a href="index.html" class="action-button" style="display: inline-block; background: linear-gradient(135deg, #1A2B6D 0%, #D52B1E 100%); color: white; padding: 0.8rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; transition: all 0.3s; margin-top: 1rem;">返回主頁</a>
+                        <a href="index.html" class="action-button" style="display: inline-block; background: linear-gradient(135deg, #1A2B6D 0%, #D52B1E 100%); color: white; padding: 0.8rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; margin-top: 1rem;">返回主頁</a>
                     </div>
                 </div>
             </div>
@@ -1656,13 +1689,16 @@
             const closeInfoBtn = document.getElementById('close-info-btn');
             const toggleTableBtn = document.getElementById('toggle-table-btn');
             const dataTableContainer = document.getElementById('data-table-container');
+            const zoomInBtn = document.getElementById('zoom-in');
+            const zoomOutBtn = document.getElementById('zoom-out');
+            const resetZoomBtn = document.getElementById('reset-zoom');
             
             // 國家資訊面板元素
-            const countryNameElement = document.getElementById('country-name');
+            const countryNameEnElement = document.getElementById('country-name-en');
+            const countryNameZhElement = document.getElementById('country-name-zh');
             const riskLevelElement = document.getElementById('risk-level');
             const gpiIndexElement = document.getElementById('gpi-index');
             const travelSafeIndexElement = document.getElementById('travel-safe-index');
-            const safestRankElement = document.getElementById('safest-rank');
             
             let lastScrollTop = 0;
             let isMenuOpen = false;
@@ -1671,7 +1707,7 @@
             let isFooterVisible = false;
             
             // D3.js 變數
-            let width, height, svg, projection, path, mapGroup, countryPaths;
+            let width, height, svg, projection, path, mapGroup, countryPaths, zoom;
             
             // 風險數據索引
             let riskDataMap = {};
@@ -1785,7 +1821,7 @@
                     case 'High':
                         return 'rgba(213, 43, 30, 0.8)'; // 紅色
                     case 'Medium':
-                        return 'rgba(255, 165, 0, 0.8)'; // 橙色
+                        return 'rgba(255, 165, 0, 0.8)'; // 黃色
                     case 'Low':
                         return 'rgba(0, 128, 0, 0.8)'; // 綠色
                     default:
@@ -1816,12 +1852,17 @@
              * @param {Object} countryData - 國家數據
              */
             function showCountryInfo(countryData) {
+                // 獲取國家英文名（這裡使用flagCode作為英文名，實際應使用英文名數據）
+                // 由於數據中只有中文名，我們將flagCode作為英文名顯示
+                const countryCode = countryData.flagCode;
+                const countryNameEn = getCountryEnglishName(countryCode) || countryCode;
+                
                 // 更新面板內容
-                countryNameElement.textContent = countryData.country;
+                countryNameEnElement.textContent = countryNameEn;
+                countryNameZhElement.textContent = countryData.country;
                 riskLevelElement.textContent = countryData.RiskLevelByCountryViaTravelSafe || '無數據';
                 gpiIndexElement.textContent = countryData.GlobalPeaceIndex_2025 || '無數據';
                 travelSafeIndexElement.textContent = countryData.SafestCountriesIndexViaTravelSafe || '無數據';
-                safestRankElement.textContent = countryData.SafestCountriesRankUSNews_2024 || '無數據';
                 
                 // 設置風險等級顏色
                 riskLevelElement.className = 'info-value';
@@ -1835,6 +1876,39 @@
                 
                 // 顯示面板
                 countryInfoPanel.classList.add('visible');
+            }
+            
+            /**
+             * 根據國家代碼獲取英文名
+             * @param {string} countryCode - 國家代碼
+             * @returns {string} 英文名
+             */
+            function getCountryEnglishName(countryCode) {
+                // 這裡可以擴展為完整的國家代碼到英文名的映射
+                const countryNames = {
+                    'CN': 'China',
+                    'US': 'United States',
+                    'JP': 'Japan',
+                    'GB': 'United Kingdom',
+                    'KR': 'South Korea',
+                    'DE': 'Germany',
+                    'FR': 'France',
+                    'IT': 'Italy',
+                    'RU': 'Russia',
+                    'CA': 'Canada',
+                    'AU': 'Australia',
+                    'BR': 'Brazil',
+                    'IN': 'India',
+                    'MX': 'Mexico',
+                    'ES': 'Spain',
+                    'PT': 'Portugal',
+                    'TW': 'Taiwan',
+                    'HK': 'Hong Kong',
+                    'MO': 'Macau',
+                    // 可以添加更多國家映射
+                };
+                
+                return countryNames[countryCode] || '';
             }
             
             /**
@@ -1924,6 +1998,7 @@
                 let dataField = field;
                 if (field === 'risk') dataField = 'RiskLevelByCountryViaTravelSafe';
                 if (field === 'gpi') dataField = 'GlobalPeaceIndex_2025';
+                if (field === 'travel') dataField = 'SafestCountriesIndexViaTravelSafe';
                 
                 displayedData.sort((a, b) => {
                     let aValue = a[dataField];
@@ -1977,7 +2052,7 @@
                 const searchLower = searchTerm.toLowerCase();
                 displayedData = riskData.filter(country => 
                     country.country.toLowerCase().includes(searchLower) ||
-                    country.flagCode.toLowerCase().includes(searchLower)
+                    getCountryEnglishName(country.flagCode).toLowerCase().includes(searchLower)
                 );
                 
                 // 應用當前排序
@@ -2062,6 +2137,16 @@
                     .translate([width / 2, height / 1.5]);
                 
                 path = d3.geoPath(projection);
+                
+                // 設置縮放行為
+                zoom = d3.zoom()
+                    .scaleExtent([0.5, 8]) // 縮放範圍
+                    .on('zoom', function(event) {
+                        mapGroup.attr('transform', event.transform);
+                    });
+                
+                // 應用縮放行為到SVG
+                svg.call(zoom);
                 
                 // 創建地圖群組
                 mapGroup = svg.append('g');
@@ -2175,6 +2260,31 @@
                 });
             }
             
+            /**
+             * 縮放地圖
+             * @param {number} factor - 縮放因子
+             */
+            function zoomMap(factor) {
+                const currentTransform = d3.zoomTransform(svg.node());
+                const newScale = currentTransform.k * factor;
+                
+                // 限制縮放範圍
+                if (newScale < 0.5 || newScale > 8) return;
+                
+                svg.transition()
+                    .duration(300)
+                    .call(zoom.scaleTo, newScale);
+            }
+            
+            /**
+             * 重置縮放
+             */
+            function resetZoom() {
+                svg.transition()
+                    .duration(300)
+                    .call(zoom.transform, d3.zoomIdentity);
+            }
+            
             // 顯示界面元素
             function showInterfaceElements() {
                 // 顯示地圖載入提示
@@ -2241,12 +2351,12 @@
                     this.setAttribute('data-order', newOrder);
                     
                     // 更新按鈕文本
-                    if (sortField === 'country') {
-                        this.textContent = newOrder === 'asc' ? '國家名稱 A-Z' : '國家名稱 Z-A';
-                    } else if (sortField === 'risk') {
+                    if (sortField === 'risk') {
                         this.textContent = newOrder === 'asc' ? '風險等級 ↑' : '風險等級 ↓';
                     } else if (sortField === 'gpi') {
                         this.textContent = newOrder === 'asc' ? '和平指數 ↑' : '和平指數 ↓';
+                    } else if (sortField === 'travel') {
+                        this.textContent = newOrder === 'asc' ? '旅行安全指數 ↑' : '旅行安全指數 ↓';
                     }
                     
                     // 排序數據
@@ -2264,6 +2374,11 @@
             
             // 切換表格顯示狀態
             toggleTableBtn.addEventListener('click', toggleTable);
+            
+            // 縮放控制
+            zoomInBtn.addEventListener('click', () => zoomMap(1.5));
+            zoomOutBtn.addEventListener('click', () => zoomMap(0.67));
+            resetZoomBtn.addEventListener('click', resetZoom);
             
             // 移動工具提示跟隨鼠標
             document.addEventListener('mousemove', function(e) {
