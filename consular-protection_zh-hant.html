@@ -641,58 +641,26 @@
             line-height: 1.5;
         }
 
-        /* 新樣式：應用程式列表 */
-        .app-list {
+        /* 新樣式：應用程式列表 - 修改為簡單文本列表 */
+        .simple-app-list {
             margin: 2rem 0;
+            padding-left: 0;
+            list-style-type: none;
         }
 
-        .app-item {
-            display: flex;
-            align-items: center;
-            padding: 1.2rem;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 10px;
+        .simple-app-list li {
+            font-size: 1.1rem;
+            line-height: 1.7;
             margin-bottom: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: background 0.3s;
+            color: rgba(255, 255, 255, 0.9);
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .app-item:hover {
-            background: rgba(0, 0, 0, 0.6);
-        }
-
-        .app-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1.5rem;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        .app-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .app-info {
-            flex: 1;
-        }
-
-        .app-name {
-            font-size: 1.2rem;
-            color: #FFD700;
-            margin-bottom: 0.3rem;
-        }
-
-        .app-desc {
-            font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.8);
+        .simple-app-list li:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
 
         /* 提示框 */
@@ -935,20 +903,6 @@
         .content-card .function-button .function-title,
         .content-card .function-button .function-desc {
             color: inherit; /* 繼承按鈕的顏色設定 */
-        }
-
-        /* 應用程式圖標佔位符 */
-        .app-icon-placeholder {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1A2B6D 0%, #D52B1E 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.8rem;
-            text-align: center;
-            padding: 0.5rem;
         }
 
         /* 桌面適配 (移動優先) */
@@ -1408,104 +1362,17 @@
                     <li>中國領事服務網：<a href="https://cs.mfa.gov.cn" target="_blank">cs.mfa.gov.cn</a></li>
                 </ul>
                 
-                <!-- 應用程式列表 - 已按照要求順序重新排列 -->
-                <div class="app-list">
-                    <!-- 1. "中國領事"APP -->
-                    <div class="app-item">
-                        <div class="app-icon">
-                            <div class="app-icon-placeholder">
-                                請替換為<br>"中國領事"APP.jpg
-                            </div>
-                        </div>
-                        <div class="app-info">
-                            <div class="app-name">"中國領事"APP</div>
-                            <div class="app-desc">官方領事服務應用程式，提供全面服務</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 2. "中國領事"微信小程序 -->
-                    <div class="app-item">
-                        <div class="app-icon">
-                            <div class="app-icon-placeholder">
-                                請替換為<br>"中國領事"微信小程序.jpg
-                            </div>
-                        </div>
-                        <div class="app-info">
-                            <div class="app-name">"中國領事"微信小程序</div>
-                            <div class="app-desc">提供便捷的領事服務和資訊查詢</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 3. "中國領事"支付寶小程序 -->
-                    <div class="app-item">
-                        <div class="app-icon">
-                            <div class="app-icon-placeholder">
-                                請替換為<br>"中國領事"支付寶小程序.jpg
-                            </div>
-                        </div>
-                        <div class="app-info">
-                            <div class="app-name">"中國領事"支付寶小程序</div>
-                            <div class="app-desc">在支付寶平台獲取領事服務</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 4. "領事直通車"微信公眾號 -->
-                    <div class="app-item">
-                        <div class="app-icon">
-                            <div class="app-icon-placeholder">
-                                請替換為<br>"領事直通車"微信公眾號.jpg
-                            </div>
-                        </div>
-                        <div class="app-info">
-                            <div class="app-name">"領事直通車"微信公眾號</div>
-                            <div class="app-desc">獲取最新領事保護資訊和提醒</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 5. "領事直通車"嗶哩嗶哩 -->
-                    <div class="app-item">
-                        <div class="app-icon">
-                            <img src="”領事直通車”嗶哩嗶哩.png" alt="領事直通車嗶哩嗶哩">
-                        </div>
-                        <div class="app-info">
-                            <div class="app-name">"領事直通車"嗶哩嗶哩</div>
-                            <div class="app-desc">在嗶哩嗶哩平台獲取領事服務</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 6. "領事直通車"快手 -->
-                    <div class="app-item">
-                        <div class="app-icon">
-                            <img src="”領事直通車”快手.png" alt="領事直通車快手">
-                        </div>
-                        <div class="app-info">
-                            <div class="app-name">"領事直通車"快手</div>
-                            <div class="app-desc">在快手平台獲取領事服務</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 7. "領事直通車"抖音 -->
-                    <div class="app-item">
-                        <div class="app-icon">
-                            <img src="”領事直通車”抖音.png" alt="領事直通車抖音">
-                        </div>
-                        <div class="app-info">
-                            <div class="app-name">"領事直通車"抖音</div>
-                            <div class="app-desc">在抖音平台獲取領事服務</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 8. "領事直通車"微博 -->
-                    <div class="app-item">
-                        <div class="app-icon">
-                            <img src="”領事直通車”微博.png" alt="領事直通車微博">
-                        </div>
-                        <div class="app-info">
-                            <div class="app-name">"領事直通車"微博</div>
-                            <div class="app-desc">在微博平台獲取領事服務</div>
-                        </div>
-                    </div>
-                </div>
+                <!-- 應用程式列表 - 已修改為簡單文本列表 -->
+                <ul class="simple-app-list">
+                    <li>"中國領事"APP："中國領事"APP.jpg</li>
+                    <li>"中國領事"微信小程序："中國領事"微信小程序.jpg</li>
+                    <li>"中國領事"支付寶小程序："中國領事"支付寶小程序.jpg</li>
+                    <li>"領事直通車"微信公眾號："領事直通車"微信公眾號.jpg</li>
+                    <li>"領事直通車"嗶哩嗶哩："領事直通車"嗶哩嗶哩.png</li>
+                    <li>"領事直通車"快手："領事直通車"快手.png</li>
+                    <li>"領事直通車"抖音："領事直通車"抖音.png</li>
+                    <li>"領事直通車"微博："領事直通車"微博.png</li>
+                </ul>
                 
                 <p>外交部及澳門特區政府始終將海外同胞的安全與合法權益放在首位。</p>
                 
