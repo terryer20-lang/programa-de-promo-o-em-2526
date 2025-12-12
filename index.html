@@ -281,8 +281,9 @@
             justify-content: center;
             align-items: center;
             z-index: 2;
-            background: rgba(10, 15, 46, 0.85);
-            backdrop-filter: blur(3px);
+            /* 修改：减少背景透明度，使地球更明显 */
+            background: rgba(10, 15, 46, 0.65); /* 从0.85改为0.65 */
+            backdrop-filter: blur(2px); /* 减少模糊效果 */
             transition: opacity 1.2s ease-out, transform 1.2s ease-out;
         }
 
@@ -307,7 +308,7 @@
             color: #FFD700;
             margin-bottom: 1.5rem;
             font-weight: 800;
-            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.7); /* 加强阴影提高可读性 */
             position: relative;
             display: inline-block;
         }
@@ -327,8 +328,9 @@
             font-size: 1.8rem;
             color: #fff;
             margin-bottom: 2.5rem;
-            opacity: 0.9;
+            opacity: 0.95; /* 提高不透明度 */
             font-weight: 300;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); /* 添加阴影提高可读性 */
         }
 
         .welcome-icons {
@@ -342,7 +344,7 @@
         .welcome-icon {
             width: 80px;
             height: 80px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15); /* 提高背景不透明度 */
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -350,8 +352,8 @@
             font-size: 2.5rem;
             color: #FFD700;
             animation: iconFloat 3s ease-in-out infinite;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 215, 0, 0.5); /* 提高边框不透明度 */
         }
 
         .welcome-icon:nth-child(1) { animation-delay: 0s; }
@@ -366,10 +368,11 @@
 
         .welcome-text {
             font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.95); /* 提高文字不透明度 */
             line-height: 1.6;
             margin-bottom: 3rem;
             max-width: 600px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); /* 添加阴影提高可读性 */
         }
 
         .scroll-indicator {
@@ -381,12 +384,12 @@
             flex-direction: column;
             align-items: center;
             color: #FFD700;
-            opacity: 0.8;
+            opacity: 0.9; /* 提高不透明度 */
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
+            0%, 100% { opacity: 0.7; }
             50% { opacity: 1; }
         }
 
@@ -394,7 +397,7 @@
             font-size: 1.1rem;
             margin-bottom: 10px;
             font-weight: 600;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
         }
 
         .scroll-arrow {
@@ -773,48 +776,6 @@
             display: none;
         }
 
-        /* 資料來源標註 - 右下角，初始隱藏 */
-        .data-source {
-            position: fixed; /* 改为fixed定位 */
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: rgba(255, 255, 255, 0.8);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            z-index: 10;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transform: translateY(100px); /* 初始位置在下方 */
-            opacity: 0;
-            transition: all 0.8s ease-out;
-            pointer-events: auto; /* 确保可以点击 */
-        }
-        
-        /* 資料來源隱藏動畫 - 從上向下消失 */
-        .data-source.hide-down {
-            transform: translateY(100px); /* 向下消失 */
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .data-source a {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .data-source a:hover {
-            color: #FFD700;
-            text-decoration: underline;
-        }
-
-        .data-source.visible {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
         /* 桌面適配 (移動優先) */
         @media (min-width: 768px) {
             html {
@@ -1069,13 +1030,6 @@
                         <div class="scroll-text">下滑查看更多</div>
                         <div class="scroll-arrow"></div>
                     </div>
-                </div>
-
-                <!-- 資料來源標註 - 初始隱藏，添加超連結 -->
-                <div class="data-source" id="data-source">
-                    <a href="https://worldpopulationreview.com/country-rankings/safest-countries-in-the-world" target="_blank" rel="noopener noreferrer">
-                        資料來源: Safest Countries in the World 2025
-                    </a>
                 </div>
 
                 <!-- 地球載入提示 -->
@@ -1403,7 +1357,6 @@
             const menuOverlay = document.getElementById('menu-overlay');
             const earthLoading = document.getElementById('earth-loading');
             const langButtons = document.querySelectorAll('.lang-btn');
-            const dataSource = document.getElementById('data-source');
             const welcomePanel = document.getElementById('welcome-panel');
             const featuresSection = document.getElementById('features');
             const notificationsSection = document.getElementById('notifications');
@@ -1512,20 +1465,12 @@
                     if (scrollTop > 300 && !isWelcomeHidden) {
                         welcomePanel.style.display = 'none';
                         isWelcomeHidden = true;
-                        
-                        // 顯示資料來源
-                        setTimeout(() => {
-                            dataSource.classList.add('visible');
-                        }, 300);
                     }
                 } else {
                     // 向上滾動小於200px，顯示歡迎面板
                     if (isWelcomeHidden) {
                         welcomePanel.style.display = 'flex';
                         isWelcomeHidden = false;
-                        
-                        // 隱藏資料來源
-                        dataSource.classList.remove('visible');
                     }
                     
                     // 計算透明度：當scrollTop從0到200，透明度從1到0
@@ -1550,20 +1495,6 @@
                 if (!isFooterVisible && scrollTop > window.innerHeight) {
                     footer.classList.add('visible');
                     isFooterVisible = true;
-                }
-                
-                // 控制資料來源面板的隱藏/顯示（根據是否在第二區塊）
-                const featuresSectionTop = featuresSection.offsetTop;
-                const scrollTrigger = window.innerHeight * 0.5;
-                
-                if (scrollTop > featuresSectionTop - scrollTrigger) {
-                    // 滾動到第二區塊，隱藏資料來源
-                    dataSource.classList.add('hide-down');
-                } else {
-                    // 滾回第一區塊，顯示資料來源（僅當歡迎面板已隱藏時）
-                    if (isWelcomeHidden) {
-                        dataSource.classList.remove('hide-down');
-                    }
                 }
                 
                 lastScrollTop = scrollTop;
@@ -1630,8 +1561,8 @@
                     .attr("class", "graticule")
                     .attr("d", path)
                     .attr("fill", "none")
-                    .attr("stroke", "rgba(255, 255, 255, 0.1)")
-                    .attr("stroke-width", 0.3)
+                    .attr("stroke", "rgba(255, 255, 255, 0.2)") // 修改：提高经纬线可见度
+                    .attr("stroke-width", 0.5) // 修改：增加线宽
                     .attr("stroke-dasharray", "2,2");
                 
                 // 載入地圖數據
@@ -1654,15 +1585,15 @@
                         
                         const countries = topojson.feature(worldData, worldData.objects.countries).features;
                         
-                        // 繪製國家 - 簡化版，無顏色背景，無交互
+                        // 繪製國家 - 修改：提高填充色和轮廓色可见度
                         countryPaths = globeGroup.selectAll(".country")
                             .data(countries)
                             .enter().append("path")
                             .attr("class", "country")
                             .attr("d", path)
-                            .attr("fill", "rgba(255, 255, 255, 0.05)")
-                            .attr("stroke", "rgba(255, 255, 255, 0.1)")
-                            .attr("stroke-width", 0.2)
+                            .attr("fill", "rgba(255, 255, 255, 0.12)") // 修改：提高填充色不透明度
+                            .attr("stroke", "rgba(255, 255, 255, 0.25)") // 修改：提高轮廓色不透明度
+                            .attr("stroke-width", 0.4) // 修改：增加轮廓线宽
                             .style("cursor", "default");
                         
                         // 繪製地球外輪廓
@@ -1671,8 +1602,8 @@
                             .attr("class", "sphere-outline")
                             .attr("d", path)
                             .attr("fill", "none")
-                            .attr("stroke", "rgba(255, 255, 255, 0.15)")
-                            .attr("stroke-width", 0.5);
+                            .attr("stroke", "rgba(255, 255, 255, 0.3)") // 修改：提高外轮廓可见度
+                            .attr("stroke-width", 1); // 修改：增加外轮廓线宽
                         
                         // 注意：移除了拖拽交互功能，地球僅作為背景
                         
