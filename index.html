@@ -1816,12 +1816,12 @@
                             setTimeout(() => {
                                 earthLoading.style.display = 'none';
                                 
-                                // 開始快速旋轉動畫（0.8秒）
+                                // 開始快速旋轉動畫（0.5秒）
                                 let fastRotationTime = 0;
                                 const fastRotationSpeed = 12.0; // 快速旋轉速度
                                 
                                 function fastRotate() {
-                                    if (fastRotationTime < 800) { // 0.8秒
+                                    if (fastRotationTime < 500) { // 0.5秒
                                         const rotate = projection.rotate();
                                         projection.rotate([rotate[0] + fastRotationSpeed, rotate[1], rotate[2]]);
                                         
@@ -2214,6 +2214,7 @@
     </script>
 </body>
 </html
+
 
 
 
